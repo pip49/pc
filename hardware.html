@@ -1,0 +1,966 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC정비사 2급 필기 요약 - 2과목 PC와 주변기기 (다크모드 지원)</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #e67e22;
+            --accent-color: #27ae60;
+            --category-bg: #eef2f7;
+            --border-color: #dcdde1;
+            --info-bg: #fff5e6;
+            --info-border: #e67e22;
+            --ans-bg: #f8f9fa;
+            --ans-revealed: #d4efdf;
+            --header-grade: linear-gradient(135deg, #d35400, #e67e22);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #ffb74d;
+            --accent-color: #2ecc71;
+            --category-bg: #2d2d2d;
+            --border-color: #3d3d3d;
+            --info-bg: #2c1d11;
+            --info-border: #ffb74d;
+            --ans-bg: #2d2d2d;
+            --ans-revealed: #143322;
+            --header-grade: linear-gradient(135deg, #1e272e, #2c3e50);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .theme-switch {
+            inline-size: 50px;
+            position: relative;
+            block-size: 26px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input:checked + .slider {
+            background-color: #e67e22;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 10px;
+            background: var(--header-grade);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
+            padding: 12px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .quiz-num {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .quiz-question {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .quiz-answer-block {
+            background-color: var(--ans-bg);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+        }
+
+        .quiz-answer-block .hint {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .quiz-answer-block .answer {
+            display: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .quiz-answer-block.revealed {
+            background-color: var(--ans-revealed);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-answer-block.revealed .hint {
+            display: none;
+        }
+
+        .quiz-answer-block.revealed .answer {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 30px 0;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-bar">
+        <div class="theme-switch-wrapper">
+            <span>🌙 야간 다크모드</span>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="switchTheme(this)">
+                <div class="slider"></div>
+            </label>
+        </div>
+    </div>
+
+    <header>
+        <h1>PC정비사 2급 필기 초압축 100선</h1>
+        <p>제2과목: PC와 주변기기 (Core 100)</p>
+    </header>
+
+    <div class="info-box">
+        💡 <strong>학습 팁:</strong> 하드웨어 과목은 직관적인 명칭과 스펙 숫자가 많이 나옵니다. 질문을 읽고 정답 상자를 터치해 확인하며 암기해 보세요!
+    </div>
+
+    <div class="category-title">🧠 1. 중앙처리장치 (CPU) 및 연산 장치 (1~25)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q1.</span>컴퓨터의 두뇌에 해당하며 제어, 연산, 레지스터 등의 코어로 구성된 핵심 반도체 소자는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">중앙처리장치 (CPU)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q2.</span>CPU 내부에서 명령어를 해독하고 각 장치에 제어 신호를 보내 지시하는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">제어장치 (CU, Control Unit)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q3.</span>CPU 내부에서 산술 연산(+, -, *, /)과 논리 연산(AND, OR, NOT)을 수행하는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">산술논리연산장치 (ALU)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q4.</span>CPU 내부에 존재하는 초고속 임시 저장 메모리로, 연산의 중간 결과나 명령어 주소를 저장하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">레지스터 (Register)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q5.</span>CPU가 다음에 실행할 명령어의 주소(기억장소 번지)를 보관하는 레지스터는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">프로그램 카운터 (PC)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q6.</span>현재 실행 중인 명령어를 보관하는 레지스터는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">명령 레지스터 (IR)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q7.</span>연산 장치(ALU)의 입력 데이터를 기억하거나 연산 결과를 일시적으로 저장하는 가장 대표적인 레지스터는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">누산기 (Accumulator)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q8.</span>연산 결과가 양수인지, 음수인지, 0인지 또는 오버플로우가 발생했는지 등의 상태 정보를 저장하는 레지스터는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">상태 레지스터 (Status Register)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q9.</span>컴퓨터 부품들이 서로 데이터를 주고받는 통로를 뜻하는 용어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">버스 (Bus)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q10.</span>버스의 종류 중 CPU가 메모리나 주변기기에 데이터의 위치를 지정할 때 사용하는 단방향 버스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">주소 버스 (Address Bus)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q11.</span>버스의 종류 중 CPU, 기억장치, 주변기기 간에 실제 데이터를 주고받는 양방향 버스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">데이터 버스 (Data Bus)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q12.</span>CPU 속도를 나타내는 단위 중 1초당 100만 개의 명령어를 처리할 수 있는 성능 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MIPS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q13.</span>CPU 주기 중 명령어를 기억장치로부터 CPU로 가져오는 단계는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">인출 주기 (Fetch Cycle)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q14.</span>CPU 주기 중 인출된 명령어를 해독하고 실제 연산을 수행하는 단계는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">실행 주기 (Execute Cycle)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q15.</span>명령어의 길이가 일정하고 구조가 단순하여 전력 소모가 적어 모바일(ARM)이나 임베디드에 많이 쓰이는 CPU 아키텍처는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RISC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q16.</span>명령어 구조가 복잡하고 가변 길이를 가지며, 고성능 PC(Intel/AMD)에 주로 쓰이는 하이브리드 아키텍처는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CISC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q17.</span>CPU 내부에 물리적으로 독립되어 배치된 연산 처리 장치의 핵심 단위를 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">코어 (Core)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q18.</span>하나의 물리적인 코어를 소프트웨어적으로 두 개의 코어처럼 인식하게 하여 효율을 높이는 인텔의 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">하이퍼스레딩 (Hyper-Threading)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q19.</span>CPU 성능을 인위적으로 높이기 위해 메인보드 설정(BIOS)에서 인가 전압과 클록 주파수를 강제로 올리는 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">오버클러킹 (Overclocking)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q20.</span>CPU와 주 메모리(RAM) 사이의 속도 차이를 줄이기 위해 CPU 내부에 탑재된 초고속 버퍼 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">캐시 메모리 (Cache Memory)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q21.</span>캐시 메모리는 반도체 소자 중 전원이 켜져 있는 동안 데이터가 유지되는 어떤 메모리로 만들어지는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SRAM (정적 램)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q22.</span>CPU 가열을 막기 위해 칩 위에 써멀구리스를 바르고 장착하는 냉각 장치 부품은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">방열판 및 쿨링팬</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q23.</span>Intel CPU 소켓 형태 중 메인보드에 핀이 있고 CPU 바닥면은 평평한 접점으로 되어 있는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">LGA 방식</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q24.</span>AMD CPU 소켓 형태 중 CPU 칩 자체에 핀이 침처럼 돋아나 있어 메인보드 구멍에 삽입하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PGA 방식</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q25.</span>CPU가 처리할 데이터가 캐시 메모리에 존재할 확률을 뜻하는 용어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">적중률 (Hit Ratio)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 2 -->
+    <div class="category-title">💾 2. 주기억장치 및 메모리 (26~50)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q26.</span>전원이 꺼지면 저장된 내용이 모두 사라지는 휘발성 메모리로, 컴퓨터의 주 작업 공간 역할을 하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAM (Random Access Memory)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q27.</span>주기적인 충전(Refresh)이 필요하며, 구조가 단순하고 집적도가 높아 일반적인 PC 메인 메모리로 쓰이는 RAM 종류는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DRAM (동적 램)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q28.</span>컴퓨터 부팅 시 하드웨어 제어 및 BIOS 시스템이 담겨 있는 읽기 전용 비휘발성 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ROM (Read Only Memory)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q29.</span>ROM의 종류 중 자외선을 이용해 데이터를 지우고 다시 쓸 수 있는 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">EPROM</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q30.</span>ROM의 종류 중 전기적인 신호로 내용을 여러 번 수정할 수 있어 현재 메인보드 BIOS나 USB 메모리에 쓰이는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">EEPROM</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q31.</span>메인보드 BIOS 설정을 저장하는 반도체로, PC 전원이 꺼져도 메인보드 배터리를 통해 정보를 유지하는 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CMOS (NVRAM)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q32.</span>DDR4, DDR5 등 규격에서 DDR의 풀네임으로, 클록 신호의 상승 모서리와 하강 모서리 모두에서 데이터를 전송하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Double Data Rate</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q33.</span>메모리의 용량 단위 중 1024GB(기가바이트)에 해당하는 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">1TB (테라바이트)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q34.</span>컴퓨터 하드웨어 데이터 오류를 검출하고 한 자리 오류를 스스로 수정할 수 있는 기능을 가진 고성능 서버용 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ECC 메모리</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q35.</span>동일한 스펙의 RAM 2개를 짝수 슬롯에 장착하여 데이터 대역폭을 2배로 넓히는 메모리 구성 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">듀얼 채널 (Dual Channel)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q36.</span>기억장치의 접근 속도를 향상시키기 위해 연속된 메모리 주소를 여러 개의 독립된 모듈에 분산하여 동시 접근하는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">메모리 인터리빙 (Memory Interleaving)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q37.</span>컴퓨터가 꺼질 때 메모리(RAM)에 있는 데이터를 하드디스크에 저장해 두었다가 켤 때 빠르게 복원하는 윈도우 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">최대 절전 모드 (Hibernation)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q38.</span>메모리의 핀 수 규격 중 데스크톱용 긴 메모리 모듈의 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DIMM</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q39.</span>메모리의 핀 수 규격 중 노트북용 짧은 크기의 메모리 모듈 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SO-DIMM</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q40.</span>메모리가 CPU의 명령을 받고 데이터를 준비하여 출력할 때까지 걸리는 지연 시간을 뜻하는 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CL (Cas Latency)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q41.</span>디스크의 느린 속도를 보완하기 위해 자주 사용하는 디스크 데이터를 RAM 공간에 일시적으로 보관하는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 캐시 (Disk Cache)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q42.</span>가상 메모리 체제에서 주기억장치와 보조기억장치 간에 교환되는 데이터의 최소 고정 크기 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">페이지 (Page)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q43.</span>컴퓨터 하드웨어 부품 중 데이터를 보관하는 속도가 가장 빠른 것부터 느린 순서로 나열하면?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">레지스터 > 캐시메모리 > 주기억장치 > 보조기억장치</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q44.</span>시스템 소프트웨어 업그레이드 시 칩을 교체하지 않고 소프트웨어 프로그램으로 메인보드 BIOS를 갱신하는 작업을 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">펌웨어 플래싱 (BIOS 업데이트)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q45.</span>데이터 표현 단위 중 컴퓨터가 처리하는 가장 작은 정보 단위(0과 1)는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">비트 (Bit)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q46.</span>8개의 비트(Bit)가 모여 구성되며, 영문자나 숫자 1글자를 표현할 수 있는 기본 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">바이트 (Byte)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q47.</span>주기억장치의 용량이 부족하여 프로그램이 실행되지 않을 때, 보조기억장치의 일부를 메모리처럼 끌어다 쓰는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">가상 메모리 (Virtual Memory)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q48.</span>ROM에 저장된 하드웨어 제어 프로그램처럼, 소프트웨어의 성격을 가진 하드웨어 장치를 통칭하는 말은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">펌웨어 (Firmware)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q49.</span>메인보드 부팅 시 하드웨어 부품(CPU, RAM, VGA 등)의 이상 유무를 점검하고 삐- 소리로 경고하는 자가 진단 과정은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">POST (Power On Self Test)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q50.</span>컴퓨터의 데이터 처리 단위 중 CPU가 한 번의 연산으로 처리할 수 있는 명령 단위(32비트, 64비트 등)는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">워드 (Word)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 3 -->
+    <div class="category-title">💽 3. 보조기억장치 및 인터페이스 (51~75)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q51.</span>자성 물질이 입혀진 플래터(원판)를 회전시켜 헤드를 통해 데이터를 읽고 쓰는 전통적인 대용량 보조기억장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">하드디스크 드라이브 (HDD)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q52.</span>반도체 플래시 메모리를 사용하여 소음이 없고 읽기/쓰기 속도가 압도적으로 빠른 최신 보조기억장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SSD (Solid State Drive)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q53.</span>SSD에 사용되는 플래시 메모리 중, 셀 하나에 1비트의 데이터를 저장하여 내구성과 속도가 가장 뛰어난 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SLC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q54.</span>SSD 셀 하나에 3비트의 데이터를 저장하며, 가성비가 좋아 일반 PC용 SSD에 가장 널리 쓰이는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">TLC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q55.</span>하드디스크에서 데이터가 저장되는 동심원 모양의 트랙들이 물리적으로 수직 배치되어 형성된 논리적 디스크 원통 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">실린더 (Cylinder)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q56.</span>하드디스크 디렉터리 및 파일 위치 정보가 저장되는 트랙의 가장 최소 물리적 데이터 부채꼴 기록 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">섹터 (Sector)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q57.</span>하드디스크의 속도를 결정하는 요소로, 1분당 플래터가 회전하는 횟수를 나타내는 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RPM</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q58.</span>디스크 내부에서 원하는 데이터가 있는 트랙(실린더)까지 헤드가 이동하는 데 걸리는 시간은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">탐색 시간 (Seek Time)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q59.</span>헤드가 해당 트랙에 도달한 후 플래터가 회전하여 원하는 섹터가 헤드 밑에 올 때까지 기다리는 시간은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">회전 지연 시간 (Latency Time)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q60.</span>과거 HDD에 쓰이던 IDE 방식을 대체한 표준 인터페이스로, 직렬 데이터 전송 방식을 사용하는 디스크 연결 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SATA (Serial ATA)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q61.</span>SATA 3 규격의 이론상 최대 데이터 전송 속도는 몇 Gbps인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">6Gbps</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q62.</span>메인보드 슬롯에 직접 껌 모양으로 장착하는 초소형 고속 SSD 폼팩터 규격 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">M.2</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q63.</span>M.2 SSD 중 SATA 인터페이스 한계를 벗어나 PCIe 대역폭을 직접 활용해 수천 MB/s 속도를 내는 통신 프로토콜 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NVMe</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q64.</span>기존 HDD 인터페이스의 한계를 극복하고 SSD의 빠른 속도를 온전히 지원하기 위해 개발된 고급 호스트 컨트롤러 인터페이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">AHCI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q65.</span>USB 장치를 컴퓨터가 켜져 있는 상태에서 언제든 연결하거나 제거할 수 있는 기능을 뜻하는 용어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">핫 플러깅 (Hot Plugging)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q66.</span>최대 127개의 주변기기를 사슬 모양(Daisy Chain)으로 연결할 수 있는 직렬 버스 규격 인터페이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">USB</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q67.</span>USB 3.0 규격의 포트 내부 색상은 주로 어떤 색으로 구별되는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파란색 (Blue)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q68.</span>USB 3.1이나 USB 4 등에 사용되며, 앞뒤 구분 없이 뒤집어서 꽂아도 작동하는 최신 소형 커넥터 형태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Type-C</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q69.</span>인텔과 애플이 공동 개발한 초고속 인터페이스로, PCIe와 디스플레이포트 기술을 통합하여 대역폭이 매우 높은 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">썬더볼트 (Thunderbolt)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q70.</span>여러 개의 디스크를 묶어 성능과 안정성을 높이는 RAID 기술 중, 데이터 유실 시 복구할 수 있도록 패리티 정보를 분산 저장하는 대중적인 레벨은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAID 5</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q71.</span>하드디스크 표면의 물리적 자성 손상이나 결함으로 인해 데이터를 읽고 쓰지 못하는 디스크 영역을 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">배드 섹터 (Bad Sector)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q72.</span>CD-ROM, DVD, 블루레이 디스크처럼 레이저 광선을 쏘아 데이터를 읽어내는 저장 매체 종류는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">광학 디스크 (Optical Disk)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q73.</span>블루레이 디스크(Blu-ray) 단면 한 층(Single Layer)에 저장할 수 있는 표준 용량은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">25GB</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q74.</span>하드디스크가 물리적으로 충격을 받아 헤드가 플래터 표면을 긁어 손상시키는 현상을 방지하는 보호 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파킹 (Parking)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q75.</span>디스크를 포맷할 때, 파일의 논리적 위치 정보 테이블만 초기화하여 데이터를 순식간에 지우는 포맷 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">빠른 포맷</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 4 -->
+    <div class="category-title">🖥️ 4. 그래픽, 사운드 및 입출력 장치 (76~100)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q76.</span>컴퓨터의 디지털 신호를 영상 신호로 변환하여 모니터로 보내주는 확장 카드 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">그래픽카드 (VGA)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q77.</span>그래픽카드 내부에서 3D 그래픽 연산 및 화면 출력을 전담하는 멀티코어 기반의 핵심 칩셋은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">GPU</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q78.</span>그래픽카드에 탑재되어 모니터에 뿌려질 화면 이미지를 임시 보관하는 전용 고속 메모리는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">VRAM (비디오 램)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q79.</span>디지털 영상 신호와 음성 신호를 케이블 하나로 동시에 전송할 수 있는 가전 및 PC 표준 모니터 포트는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">HDMI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q80.</span>VESA에서 제안한 디스플레이 포트 규격으로, 고주사율 모니터와 멀티 스트리밍에 최적화된 PC 전용 고속 포트는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DP (DisplayPort)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q81.</span>과거에 사용되던 아날로그 방식의 15핀 D-Sub 모니터 단자의 또 다른 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">VGA 포트</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q82.</span>디지털 전용 모니터 단자로, 싱글링크와 듀얼링크로 나뉘며 흰색 커넥터 모양을 가진 과거 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DVI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q83.</span>모니터 화면의 가로세로 픽셀 수를 뜻하며, 화면이 얼마나 선명한지 나타내는 지표는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">해상도 (Resolution)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q84.</span>Full HD(FHD) 해상도의 정확한 가로 및 세로 픽셀 수는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">1920 x 1080</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q85.</span>모니터 화면이 1초 동안 새롭게 갱신(깜빡이는) 횟수를 뜻하며, 단위로 Hz를 사용하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">주사율 (Refresh Rate)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q86.</span>액정을 사용하여 얇고 가볍게 만든 모니터로, 백라이트가 필요한 대중적인 디스플레이 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">LCD 모니터</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q87.</span>백라이트 없이 화소 스스로 빛을 내어 명암비가 완벽하고 두께가 매우 얇은 차세대 디스플레이는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">OLED 모니터</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q88.</span>모니터 패널 종류 중, 시야각이 매우 넓고 색 재현율이 우수하여 그래픽 작업용으로 많이 쓰이는 패널은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IPS 패널</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q89.</span>응답 속도가 매우 빨라 게이밍 모니터에 자주 쓰이지만, 시야각이 좁다는 단점이 있는 패널 종류는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">TN 패널</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q90.</span>사운드카드에서 아날로그 음성 신호를 컴퓨터가 이해하는 디지털 신호로 변환하는 장치(칩셋)는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ADC (Analog to Digital Converter)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q91.</span>사운드카드에서 디지털 신호를 스피커로 출력하기 위해 아날로그 신호로 변환하는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DAC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q92.</span>음악 장비 간의 디지털 신호 규격을 통일하여 컴퓨터로 악기를 제어할 수 있게 만든 표준 인터페이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MIDI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q93.</span>마우스의 움직임 감도 단위를 뜻하며, 마우스를 1인치 움직였을 때 모니터 화면에서 몇 픽셀 이동하는지 나타내는 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DPI (Dots Per Inch)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q94.</span>기계식 키보드에서 내부 스위치 입력 시 발생하는 미세한 전기적 잡음(팅김 현상)을 소프트웨어적으로 방지하는 제어 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디바운싱 (Debouncing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q95.</span>스캐너나 카메라로 촬영한 이미지 속의 인쇄된 문자나 텍스트를 컴퓨터가 편집 가능한 글자로 인식해내는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">OCR (광학 문자 인식)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q96.</span>잉크젯 프린터의 인쇄 노즐이 막혔을 때, 소프트웨어 명령을 통해 노즐의 굳은 잉크를 밀어내 청소하는 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">헤드 정렬 및 헤드 청소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q97.</span>레이저 프린터에서 종이에 묻은 토너 가루를 뜨거운 열과 압력으로 지져서 종이에 고착시키는 부품은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">정착기 (Fuser)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q98.</span>프린터의 인쇄 해상도 선명도를 나타내는 단위로, 1인치당 찍히는 점의 개수를 의미하는 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DPI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q99.</span>컴퓨터 본체 내부의 열을 밖으로 빼내거나 찬 공기를 흡입하기 위해 케이스에 장착하는 부품은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">쿨링팬 (시스템 팬)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q100.</span>가정용 220V 교류(AC) 전원을 컴퓨터 부품들이 사용하는 직류(DC 3.3V, 5V, 12V 등) 전원으로 변환해주는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파워서플라이 (Power Supply)</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© PC정비사 2급 필기 완전정복 요약집</p>
+    </footer>
+
+    <script>
+        function toggleAnswer(element) {
+            element.classList.toggle('revealed');
+        }
+
+        function switchTheme(checkbox) {
+            if (checkbox.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,966 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC정비사 2급 필기 요약 - 4과목 PC네트워크 (다크모드 지원)</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #9b59b6;
+            --accent-color: #e67e22;
+            --category-bg: #eef2f7;
+            --border-color: #dcdde1;
+            --info-bg: #f5eef8;
+            --info-border: #9b59b6;
+            --ans-bg: #f8f9fa;
+            --ans-revealed: #fdebd0;
+            --header-grade: linear-gradient(135deg, #6c3483, #9b59b6);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #b388ff;
+            --accent-color: #ffb74d;
+            --category-bg: #2d2d2d;
+            --border-color: #3d3d3d;
+            --info-bg: #24142c;
+            --info-border: #b388ff;
+            --ans-bg: #2d2d2d;
+            --ans-revealed: #3d2b16;
+            --header-grade: linear-gradient(135deg, #1e272e, #2c3e50);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .theme-switch {
+            inline-size: 50px;
+            position: relative;
+            block-size: 26px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 10px;
+            background: var(--header-grade);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
+            padding: 12px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .quiz-num {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .quiz-question {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .quiz-answer-block {
+            background-color: var(--ans-bg);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+        }
+
+        .hint {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .answer {
+            display: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .quiz-answer-block.revealed {
+            background-color: var(--ans-revealed);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-answer-block.revealed .hint {
+            display: none;
+        }
+
+        .quiz-answer-block.revealed .answer {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 30px 0;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-bar">
+        <div class="theme-switch-wrapper">
+            <span>🌙 야간 다크모드</span>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="switchTheme(this)">
+                <div class="slider"></div>
+            </label>
+        </div>
+    </div>
+
+    <header>
+        <h1>PC정비사 2급 필기 초압축 100선</h1>
+        <p>제4과목: PC 네트워크 (Core 100)</p>
+    </header>
+
+    <div class="info-box">
+        💡 <strong>학습 팁:</strong> 4과목 네트워크는 OSI 7계층, TCP/IP 프로토콜, IP 주소 계산, 무선 규격 등이 단골로 나옵니다. 터치하며 완벽하게 암기해 보세요!
+    </div>
+
+    <div class="category-title">🌐 1. 네트워크 기본 이론 및 OSI 7계층 (1~25)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q1.</span>지리적으로 가까운 거리에 있는 컴퓨터와 주변기기들을 연결한 고속 자원 공유 네트워크 형태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">LAN (근거리 통신망)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q2.</span>국가, 대륙 등 광범위한 지리적 영역을 연결하는 대규모 네트워크 형태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">WAN (광역 통신망)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q3.</span>ISO에서 발표한 표준 네트워크 아키텍처로, 통신 과정을 7개 단계로 분할한 모델은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">OSI 7계층</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q4.</span>OSI 7계층 중 가장 아래에 위치하며, 전기적, 기계적 신호를 전송하는 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">물리 계층 (1계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q5.</span>OSI 7계층 중 물리적 링크를 통한 신뢰성 있는 전송을 보장하며, MAC 주소가 동작하는 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">데이터 링크 계층 (2계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q6.</span>OSI 7계층 중 패킷의 최적 경로를 설정(라우팅)하고 IP 주소가 동작하는 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">네트워크 계층 (3계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q7.</span>OSI 7계층 중 종단 간(End-to-End)의 신뢰성 있고 정확한 데이터 전송을 담당하며 TCP/UDP가 속한 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">전송 계층 (4계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q8.</span>OSI 7계층 중 송수신 측 간의 대화 체제 구축 및 동기 제어를 담당하는 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">세션 계층 (5계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q9.</span>OSI 7계층 중 데이터의 암호화, 압축, 코드 변환 등 형식(포맷)을 정의하는 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">표현 계층 (6계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q10.</span>OSI 7계층 중 사용자 인터페이스를 제공하며 HTTP, FTP 등 서비스가 속한 계층은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">응용 계층 (7계층)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q11.</span>데이터 링크 계층(2계층)의 데이터 전송 단위를 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">프레임 (Frame)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q12.</span>네트워크 계층(3계층)에서 경로 지정을 위해 사용하는 데이터 전송 단위를 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">패킷 (Packet)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q13.</span>전송 계층(4계층)에서 TCP 프로토콜이 사용하는 신뢰성 있는 데이터 전송 단위는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">세그먼트 (Segment)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q14.</span>네트워크 토폴로지 중 중앙의 허브나 스위치를 중심으로 모든 노드가 성형으로 연결된 구조는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">성형 (Star형)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q15.</span>네트워크 토폴로지 중 하나의 메인 케이블(버스)에 여러 노드가 일렬로 연결된 구조는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">버스형 (Bus형)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q16.</span>모든 노드가 서로 1:1로 그물망처럼 촘촘히 연결되어 신뢰성이 가장 높은 네트워크 구조는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">망형 (Mesh형)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q17.</span>컴퓨터끼리 통신을 하기 위해 규정해 놓은 상호 간의 통신 규약 및 약속을 뜻하는 말은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">프로토콜 (Protocol)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q18.</span>랜카드(NIC)에 공장에서부터 붙어 나오는 고유한 물리적 하드웨어 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MAC 주소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q19.</span>MAC 주소의 총 길이는 몇 비트(Bit)인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">48비트</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q20.</span>MAC 주소를 구성하는 16진수 번호 중 앞쪽 24비트가 나타내는 의미는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">제조사 식별 코드 (OUI)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q21.</span>데이터 통신 방식 중 송수신이 양쪽 모두 가능하지만, 동시에 전송할 수는 없고 번갈아가며 통신하는 방식(무전기 등)은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">반이중 통신 (Half Duplex)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q22.</span>데이터 통신 방식 중 동시에 양방향으로 데이터 송수신이 가능한 방식(전화기, 일반 랜 통신 등)은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">전전이중 통신 (Full Duplex)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q23.</span>LAN 표준 규격 중 이더넷(Ethernet)의 유선 LAN 표준을 정의하는 IEEE 규격 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IEEE 802.3</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q24.</span>이더넷에서 사용하는 통신 제어 방식으로, 충돌을 감지하면 일정 시간 대기 후 재전송하는 방식의 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CSMA/CD</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q25.</span>무선 LAN(Wi-Fi)에서 사용하는 통신 제어 방식으로, 충돌을 사전에 회피하도록 설계된 방식의 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CSMA/CA</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 2 -->
+    <div class="category-title">🧠 2. TCP/IP 프로토콜 및 계층 (26~50)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q26.</span>현재 전 세계 인터넷에서 표준으로 사용되는 4계층 구조의 프로토콜 스택은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">TCP/IP 프로토콜</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q27.</span>TCP/IP 계층 중 전송 계층에 속하며, 연결 지향적이고 3-Way Handshaking을 통해 신뢰성을 보장하는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">TCP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q28.</span>TCP/IP 전송 계층에 속하며, 비연결성이며 오버헤드가 적어 실시간 스트리밍이나 동영상 전송에 쓰이는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">UDP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q29.</span>논리적인 데이터 전송 단위인 패킷의 전송을 전담하는 TCP/IP의 핵심 네트워크 계층 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q30.</span>IP 주소를 하드웨어 주소인 MAC 주소로 변환해주는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ARP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q31.</span>ARP와 반대로, 하드웨어 MAC 주소를 가지고 이에 대응하는 논리적 IP 주소를 알아내는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RARP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q32.</span>네트워크 상에서 오류 보고, 경로 제어 등 통신 상태를 진단할 때 쓰이며, ping 명령어가 사용하는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ICMP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q33.</span>네트워크 장비들을 모니터링하고 관리하기 위해 사용하는 응용 계층의 네트워크 관리 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SNMP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q34.</span>인터넷 웹페이지를 주고받을 때 사용하는 기본 프로토콜로, 80번 포트를 사용하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">HTTP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q35.</span>HTTP에 SSL/TLS 암호화를 추가하여 보안을 강화한 프로토콜로, 443번 포트를 사용하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">HTTPS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q36.</span>네트워크를 통해 원격으로 파일을 송수신할 때 사용하는 파일 전송 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">FTP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q37.</span>인터넷 상에서 전자우편(E-mail)을 송신(보낼 때)할 때 사용하는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SMTP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q38.</span>이메일 서버에 보관된 메일을 사용자의 PC로 가져올 때 쓰는 프로토콜로, 가져온 메일을 서버에서 삭제하는 구형 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">POP3</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q39.</span>이메일 서버에 메일을 그대로 유지한 채 사용자가 어디서나 동기화하여 읽을 수 있도록 지원하는 최신 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IMAP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q40.</span>호스트의 도메인 이름(naver.com)을 IP 주소로 변환하거나 그 반대의 기능을 수행하는 서비스 포트는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DNS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q41.</span>네트워크의 클라이언트 컴퓨터에 유동 IP 주소를 자동으로 할당하고 관리해주는 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DHCP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q42.</span>응용 프로그램이 가상의 통신 통로를 식별하기 위해 사용하는 번호로, TCP/UDP와 함께 쓰이는 주소 정보는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">포트 번호 (Port)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q43.</span>주요 Well-known 포트 중 원격 보안 접속을 위한 SSH가 사용하는 기본 포트 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">22번</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q44.</span>주요 포트 중 웹 브라우저의 기본 표준 통신인 HTTP가 사용하는 포트 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">80번</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q45.</span>웹 파일이나 원격 제어를 수행하는 FTP가 데이터 전송 및 제어를 위해 사용하는 포트 번호 2가지는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">20번, 21번</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q46.</span>인터넷 메일 송신 프로토콜인 SMTP의 기본 포트 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">25번</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q47.</span>도메인 네임을 IP 주소로 바꾸어주는 DNS 서버가 사용하는 기본 포트 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">53번</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q48.</span>하나의 대형 물리 네트워크를 여러 개의 작은 논리적 네트워크로 쪼개어 사용하는 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">서브네팅 (Subnetting)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q49.</span>사설 IP 주소를 공인 IP 주소로 변환하여, 공인 IP 한 개로 내부의 여러 PC가 인터넷을 쓸 수 있게 돕는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NAT</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q50.</span>공인 IP 주소 하나에 여러 사설 IP를 매핑할 때, 포트 번호를 다르게 지정하여 구별하는 NAT의 확장 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PAT</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 3 -->
+    <div class="category-title">🔢 3. IP 주소 및 서브넷 마스크 (51~75)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q51.</span>현재 널리 사용 중인 IPv4 주소 체계는 총 몇 비트(Bit)로 구성되어 있는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">32비트</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q52.</span>IPv4 주소는 몇 비트씩 몇 개의 그룹으로 나누어 표현하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">8비트씩 4개 그룹 (점 기호로 구분)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q53.</span>차세대 주소 체계인 IPv6 주소 체계는 총 몇 비트(Bit)로 구성되어 있는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">128비트</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q54.</span>IPv6 주소는 16비트씩 8개 그룹으로 나누며, 각 그룹은 어떤 문장 부호로 구분하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">콜론 (: )</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q55.</span>IPv4 주소 클래스 중 첫 번째 옥텟의 범위가 1~126이며, 대규모 네트워크에 할당되는 클래스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">A 클래스</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q56.</span>IPv4 주소 클래스 중 첫 번째 옥텟 범위가 128~191이며, 중규모 네트워크에 쓰이는 클래스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">B 클래스</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q57.</span>IPv4 주소 클래스 중 첫 번째 옥텟 범위가 192~223이며, 일반적인 소규모 LAN에 할당되는 클래스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">C 클래스</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q58.</span>IPv4 주소 클래스 중 멀티캐스트(Multicast) 통신용으로 예약되어 개인에게 할당되지 않는 클래스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">D 클래스</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q59.</span>자신의 컴퓨터 네트워크 카드 상태를 스스로 테스트하기 위해 지정된 루프백(Loopback) IP 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">127.0.0.1</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q60.</span>인터넷망에 연결되지 않고 내부 가정이 구내 사무실 LAN 안에서만 자유롭게 쓸 수 있도록 규정된 IP 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">사설 IP 주소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q61.</span>C 클래스 사설 IP 대역 중 일반 가정용 공유기에서 가장 흔하게 사용하는 대표적인 대역 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">192.168.0.0 ~ 192.168.255.255</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q62.</span>IP 주소에서 네트워크 아이디 부분과 호스트 아이디 부분을 구별하기 위해 겹쳐서 사용하는 마스크는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">서브넷 마스크 (Subnet Mask)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q63.</span>C 클래스 네트워크의 표준(기본) 서브넷 마스크 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">255.255.255.0</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q64.</span>B 클래스 네트워크의 표준(기본) 서브넷 마스크 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">255.255.0.0</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q65.</span>IP 주소 뒤에 '/24' 와 같이 서브넷 마스크의 비트 수를 직접 표기하는 최신 주소 할당 표기법의 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CIDR</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q66.</span>특정 서브넷 내에서 호스트 부분이 모두 0(0진수)인 주소는 무엇을 의미하여 컴퓨터에 할당할 수 없는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">네트워크 주소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q67.</span>특정 서브넷 내에서 호스트 부분이 모두 1(255)인 주소는 전체 노드에 동시 패킷을 보낼 때 쓰는 어떤 주소인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">브로드캐스트 주소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q68.</span>어떤 서브넷의 서브넷 마스크가 255.255.255.128 일 때, 이 네트워크에서 실제 컴퓨터에 할당 가능한 IP 개수는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">126개 (128개 중 네트워크/브로드캐스트 제외)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q69.</span>DHCP 서버로부터 IP 주소를 할당받지 못했을 때, 윈도우가 자동으로 169.254.X.X 대역의 임시 IP를 부여하는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">APIPA</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q70.</span>IPv6의 3대 통신 링크 방식은 유니캐스트, 멀티캐스트, 그리고 나머지 하나는 무엇인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">애니캐스트 (Anycast)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q71.</span>IPv4의 주요 통신 방식 중 하나로, 동일 네트워크 내의 '모든' 호스트에게 패킷을 무조건 전송하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">브로드캐스트 (Broadcast)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q72.</span>하나의 송신자가 네트워크 상의 '특정 그룹'에 속한 여러 수신자들에게만 동시에 데이터를 전송하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">멀티캐스트 (Multicast)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q73.</span>가장 일반적인 1:1 통신 방식으로, 지정된 하나의 수신자에게만 패킷을 전송하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">유니캐스트 (Unicast)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q74.</span>서브넷 마스크가 255.255.255.192 일 때, CIDR 표기법( 비트 수)으로는 어떻게 표기하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">/26</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q75.</span>서브넷 마스크 255.255.255.240 은 호스트 비트 중 몇 비트를 네트워크 ID로 빌려 쓴 것인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">4비트</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 4 -->
+    <div class="category-title">🛠️ 4. 네트워크 장비 및 무선/최신 기술 (76~100)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q76.</span>OSI 1계층 장비로, 들어온 신호를 그대로 복제하여 연결된 모든 포트로 뿌려주는 단순 분배 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">더미 허브 (Hub)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q77.</span>OSI 2계층 장비로, 목적지 MAC 주소를 학습하여 해당 포트로만 데이터를 정확히 전달해 충돌을 방지하는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">스위칭 허브 (L2 스위치)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q78.</span>OSI 3계층 장비로, 서로 다른 네트워크를 연결하고 패킷의 최적 경로를 지정해주는 라우팅 장비는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">라우터 (Router)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q79.</span>물리적으로 다른 형태의 네트워크나 프로토콜을 사용하는 두 시스템 사이에서 데이터 포맷을 변환해주는 통로 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">게이트웨이 (Gateway)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q80.</span>유선 LAN 케이블(UTP)의 끝단에 찍어서 랜카드나 공유기에 꽂는 플라스틱 커넥터의 규격 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RJ-45</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q81.</span>UTP 케이블 내부에는 유도 전기 간섭을 줄이기 위해 몇 가닥(몇 쌍)의 구선 선이 들어 있는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">8가닥 (4쌍)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q82.</span>UTP 케이블의 카테고리 규격 중, 기가비트(1Gbps) 인터넷 속도를 완벽히 지원하는 가장 대중적인 카테고리 등급은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Cat.5e (또는 Cat.6)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q83.</span>허브와 컴퓨터를 연결할 때 사용하는 양쪽 끝의 배열 순서가 동일한 일반적인 유선 랜 케이블 배열 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">다이렉트 케이블 (Straight-through)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q84.</span>허브 없이 컴퓨터 대 컴퓨터를 직접 1:1로 유선 연결할 때 사용하는, 송신선과 수신선이 꼬여 있는 케이블 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">크로스 케이블 (Crossover)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q85.</span>무선 LAN(Wi-Fi) 규격을 제정하고 승인하는 표준화 단체인 IEEE의 무선 통신 표준 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IEEE 802.11</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q86.</span>Wi-Fi 6라고 불리며 대용량 다중 접속 환경에 최적화된 최신 무선 LAN 표준 규격 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IEEE 802.11ax</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q87.</span>무선 공유기(AP)의 식별 명칭으로, 스마트폰 와이파이 목록을 검색할 때 뜨는 무선 네트워크의 이름은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SSID</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q88.</span>무선 LAN 보안 규격 중 보안성이 가장 취약하여 현재는 쓰이지 않는 구형 암호화 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">WEP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q89.</span>현재 대부분의 무선 공유기에서 안전하게 사용하는 강력한 무선 암호화 보안 규격 표준(최신 버전 포함)은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">WPA (WPA2 / WPA3)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q90.</span>스마트폰, 블루투스 이어폰, 무선 공유기 등이 공통으로 사용하는 전 세계 면허 불필요 범용 주파수 대역은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ISM 대역 (2.4GHz)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q91.</span>2.4GHz 무선 대역에 비해 장애물 투과율은 낮지만, 채널 간섭이 적고 속도가 압도적으로 빠른 무선 주파수 대역은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">5GHz</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q92.</span>가까운 거리(약 10m 내외)에서 가전, 휴대기기, IT 장치 간에 선 없이 데이터를 주고받는 단거리 무선 통신 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">블루투스 (Bluetooth)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q93.</span>10cm 이내의 아주 가까운 거리에서 비접촉식으로 데이터를 송수신하여 교통카드, 간편결제에 쓰이는 무선 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NFC</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q94.</span>공인 IP 주소가 부족할 때 사용하는 기술로, 사설 네트워크 내의 특정 서버(웹, FTP 등) 포트를 외부 공인 IP 포트와 고정 연결해 외부 접속을 허용하는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">포트 포워딩 (Port Forwarding)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q95.</span>윈도우 명령 프롬프트에서 도메인의 네임서버 설정이나 IP 변환이 정상인지 점검하는 DNS 전용 조회 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">nslookup</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q96.</span>네트워크 케이블의 물리적인 단선 여부나 길이를 측정하고 신호 감쇄를 테스트하는 전용 장비는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">랜 케이블 테스터기</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q97.</span>가상 사설망을 뜻하며, 공중 인터넷망을 마치 전용선처럼 암호화 터널을 뚫어 안전하게 통신하게 돕는 네트워크 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">VPN</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q98.</span>네트워크 상에서 트래픽 폭주로 인한 병목 현상을 방지하기 위해 서버의 부하를 여러 대의 서버로 분산시켜주는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">로드 밸런서 (L4 스위치)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q99.</span>물리적인 네트워크 스위치 장비 하나를 소프트웨어적으로 분할하여 서로 통신이 차단된 여러 개의 독립된 가상 LAN으로 쪼개 쓰는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">VLAN (가상 랜)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q100.</span>컴퓨터 랜카드에 내장된 기능으로, 컴퓨터가 꺼져 있어도 원격지에서 전용 매직 패킷을 보내 컴퓨터를 원격 부팅시키는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">WOL (Wake on LAN)</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© PC정비사 2급 필기 완전정복 요약집</p>
+    </footer>
+
+    <script>
+        function toggleAnswer(element) {
+            element.classList.toggle('revealed');
+        }
+
+        function switchTheme(checkbox) {
+            if (checkbox.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+    </script>
+</body>
+</html>

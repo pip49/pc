@@ -1,0 +1,966 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC정비사 2급 필기 요약 - 3과목 PC유지보수 (다크모드 지원)</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #27ae60;
+            --accent-color: #2980b9;
+            --category-bg: #eef2f7;
+            --border-color: #dcdde1;
+            --info-bg: #e8f8f5;
+            --info-border: #27ae60;
+            --ans-bg: #f8f9fa;
+            --ans-revealed: #ebf5fb;
+            --header-grade: linear-gradient(135deg, #1e824c, #27ae60);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #2ecc71;
+            --accent-color: #3498db;
+            --category-bg: #2d2d2d;
+            --border-color: #3d3d3d;
+            --info-bg: #0e241b;
+            --info-border: #2ecc71;
+            --ans-bg: #2d2d2d;
+            --ans-revealed: #162d3d;
+            --header-grade: linear-gradient(135deg, #1e272e, #2c3e50);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .theme-switch {
+            inline-size: 50px;
+            position: relative;
+            block-size: 26px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input:checked + .slider {
+            background-color: #27ae60;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 10px;
+            background: var(--header-grade);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
+            padding: 12px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .quiz-num {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .quiz-question {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .quiz-answer-block {
+            background-color: var(--ans-bg);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+        }
+
+        .hint {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .answer {
+            display: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .quiz-answer-block.revealed {
+            background-color: var(--ans-revealed);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-answer-block.revealed .hint {
+            display: none;
+        }
+
+        .quiz-answer-block.revealed .answer {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 30px 0;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-bar">
+        <div class="theme-switch-wrapper">
+            <span>🌙 야간 다크모드</span>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="switchTheme(this)">
+                <div class="slider"></div>
+            </label>
+        </div>
+    </div>
+
+    <header>
+        <h1>PC정비사 2급 필기 초압축 100선</h1>
+        <p>제3과목: PC 유지보수 (Core 100)</p>
+    </header>
+
+    <div class="info-box">
+        💡 <strong>학습 팁:</strong> 3과목은 PC 조립, 바이오스 설정, 고장 증상 및 대처 방법 등 실무와 직결되는 내용이 많습니다. 질문을 읽고 정답을 매칭해 보세요!
+    </div>
+
+    <div class="category-title">🔧 1. PC 조립 및 메인보드 설정 (1~25)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q1.</span>메인보드 부품 중 노스브릿지와 사우스브릿지로 나뉘어 CPU, 메모리, 확장 슬롯 간의 데이터 흐름을 제어하는 핵심 칩들의 집합은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">칩셋 (Chipset)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q2.</span>메인보드의 칩셋 중 과거에 CPU, RAM, 그래픽카드 등 고속 장치 제어를 담당했던 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">노스브릿지 (North Bridge)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q3.</span>메인보드의 칩셋 중 SATA, USB, PCI 슬롯, 사운드 등 저속 주변기기 제어를 담당하는 것은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">사우스브릿지 (South Bridge)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q4.</span>시스템 소프트웨어인 바이오스(BIOS)가 저장되어 있으며 전기적으로 지우고 쓸 수 있는 반도체 칩은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">플래시 ROM (EEPROM)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q5.</span>날짜, 시간, 부팅 순서 등 바이오스의 설정 값이 저장되는 일시적 기억 장치로 배터리 전원으로 유지되는 곳은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CMOS 메모리</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q6.</span>메인보드 전원이 꺼져도 CMOS 설정값과 시스템 시계가 유지되도록 전원을 공급하는 버튼형 배터리 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CR2032</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q7.</span>새 컴퓨터를 조립한 후 하드디스크에 운영체제를 설치하기 전, 부팅 장치 우선순위를 지정하는 곳은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">바이오스 설정 (BIOS Setup / CMOS Setup)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q8.</span>바이오스 비밀번호를 분실했을 때 메인보드에서 CMOS 설정을 공장초기화하기 위해 쇼트시키는 핀의 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Clear CMOS 점퍼</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q9.</span>하드디스크 부팅 시 운영체제가 있는 파티션의 위치를 찾아 부팅을 시작하게 해주는 섹터의 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MBR (Master Boot Record)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q10.</span>컴퓨터 조립 시 CPU 위에 방열판을 밀착시키기 전 열전도율을 높이기 위해 바르는 젤 형태의 물질은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">써멀 구리스 (Thermal Paste)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q11.</span>데스크톱 PC 케이스의 전원 버튼, 리셋 버튼, HDD LED 등을 메인보드와 연결하는 핀 헤더의 총칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">전면 패널 커넥터 (Front Panel)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q12.</span>메인보드 전원 규격 중 현재 가장 널리 쓰이는 24핀 메인 전원 커넥터의 표준 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ATX 12V</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q13.</span>메인보드에 그래픽카드를 장착하는 가장 대표적인 고속 확장 슬롯 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PCI Express (PCIe)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q14.</span>사운드카드나 구형 확장 카드를 장착하던 과거의 범용 32비트 버스 슬롯 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PCI 슬롯</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q15.</span>컴퓨터 하드웨어 부품을 장착할 때 정전기로 인한 부품 손상을 방지하기 위해 손목에 착용하는 기구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">정전기 방지 밴드</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q16.</span>메인보드 바이오스를 최신 버전으로 업데이트하여 새로운 CPU 인식 및 버그를 수정하는 작업을 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">바이오스 플래싱 (업데이트)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q17.</span>컴퓨터 부팅 시 하드웨어의 이상 유무를 진단하여 모니터가 켜지기 전 신호음으로 알려주는 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">POST (Power On Self Test)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q18.</span>컴퓨터 전원을 켰을 때 짧게 한 번 '삑' 소리가 나는 것은 어떤 의미인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">정상 부팅 (하드웨어 이상 없음)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q19.</span>부팅 시 램(RAM)이 제대로 장착되지 않았거나 접촉 불량일 때 발생하는 일반적인 경고음 형태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">삐-, 삐-, 삐- 연속적인 길고 반복되는 비프음</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q20.</span>부팅 시 그래픽카드(VGA)가 인식되지 않거나 고장일 때 주로 발생하는 비프음 형태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">길게 한 번, 짧게 두 세 번 반복되는 비프음</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q21.</span>컴퓨터 부품 중 전력 소비량이 가장 많으며 12V 전력을 집중적으로 소모하는 부품 2가지는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CPU, 그래픽카드</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q22.</span>메인보드 크기 규격 중 일반적인 미들타워 케이스에 장착되는 가장 표준적인 대형 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Standard ATX</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q23.</span>슬림형 PC나 미니 타워 케이스에 주로 사용되는 가로세로가 비교적 짧은 메인보드 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Micro-ATX (m-ATX)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q24.</span>하드디스크 고장을 방지하고 성능을 모니터링하기 위해 하드디스크 자체에 내장된 자가 진단 기술 약어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">S.M.A.R.T.</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q25.</span>CPU 제조사에서 제공하는 기본 쿨러 외에 냉각 효율을 높이기 위해 별도로 구매해 장착하는 대형 쿨러는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">사제 쿨러 (공랭/수랭 사외 쿨러)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 2 -->
+    <div class="category-title">🔍 2. 고장 진단 및 유지보수 (26~50)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q26.</span>컴퓨터 사용 중 갑자기 화면이 멈추거나 파란 화면(블루스크린)이 뜨는 가장 흔한 하드웨어 접촉 불량 부품은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">메모리 (RAM)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q27.</span>메모리나 그래픽카드 접촉 불량 시 슬롯과 접촉하는 금박 부위를 청소할 때 쓰면 좋은 문구류는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">지우개</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q28.</span>컴퓨터 전원은 켜지나 모니터 화면에 아무것도 나오지 않고 비프음도 없을 때 가장 먼저 점검해야 할 조치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAM 및 그래픽카드 재장착 (접불 확인)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q29.</span>하드디스크 작동 중 본체에 강한 충격을 주었을 때 플래터 표면이 긁혀 발생하는 물리적 결함은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">물리적 배드 섹터</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q30.</span>전원 버튼을 눌렀으나 본체 팬도 돌지 않고 전원이 아예 들어오지 않을 때 가장 먼저 확인해야 할 본체 부품은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파워서플라이 (콘센트 및 스위치)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q31.</span>컴퓨터가 켜진 후 몇 분 지나지 않아 자꾸 저절로 꺼지거나 다운되는 증상의 가장 유력한 원인은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">CPU 과열 (쿨러 미작동 또는 써멀구리스 해제)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q32.</span>파워서플라이의 출력이 부족할 때 컴퓨터 시스템에 발생하는 가장 대표적인 증상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">3D 게임 등 고부하 작업 시 재부팅 또는 다운</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q33.</span>윈도우 부팅 중 'Operating System Not Found' 에러 메시지가 뜨는 원인은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">부팅 디스크 인식 불가 또는 마스터 부트 레코드(MBR) 파손</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q34.</span>모니터 화면의 색상이 특정 색으로 치우치거나 흐리게 나올 때 가장 먼저 확인해야 할 곳은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">모니터 케이블 연결 상태 (핀 구부러짐 등)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q35.</span>LCD 모니터 화면에 항상 특정 색상으로 켜져 있거나 꺼져 있는 불량 화소를 뜻하는 용어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">데드 픽셀 (불량 화소)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q36.</span>하드디스크에서 '딸깍딸깍' 하는 기계적 소음이 지속적으로 나며 인식이 안 되는 원인은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">헤드 또는 디스크 모터의 물리적 파손</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q37.</span>CD/DVD 드라이브의 트레이가 열리지 않을 때 클립을 펴서 강제로 열 수 있도록 마련된 구멍은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">비상 이젝트 홀 (Emergency Eject)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q38.</span>컴퓨터 내부의 먼지를 제거할 때 부품 손상을 막기 위해 사용하는 압축 분사형 청소 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">에어 스프레이 (먼지 제거제)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q39.</span>부팅할 때마다 컴퓨터 시계가 과거 날짜로 리셋되고 CMOS 에러가 뜨는 원인은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">메인보드 CMOS 배터리 방전</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q40.</span>메인보드의 전원부 콘덴서(커패시터)가 부풀어 오르거나 액이 흘러나왔을 때 발생하는 증상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">전원 불안정, 자잦은 다운 및 부팅 실패</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q41.</span>하드디스크의 논리적인 오류(파일 시스템 손상)를 수정하고 검사하는 윈도우 내장 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">chkdsk</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q42.</span>윈도우 덤프 파일 분석을 통해 블루스크린(BSOD)의 정확한 원인 파일 및 드라이버를 찾아주는 유틸리티는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">BlueScreenView</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q43.</span>그래픽카드 드라이버 꼬임 문제를 해결하기 위해 안전모드에서 그래픽 드라이버를 완전 삭제해주는 프로그램은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DDU (Display Driver Uninstaller)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q44.</span>컴퓨터 부품을 업그레이드할 때 정전기로 인한 쇼트를 방지하기 위해 반드시 해야 할 선행 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">전원 케이블 차단 및 본체 잔류 전원 제거(방전)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q45.</span>하드디스크 용량이 거의 꽉 찼을 때 시스템 속도가 느려지는 현상을 방지하기 위해 확보해야 하는 최소 여유 공간 비율은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">약 10% ~ 15% 이상</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q46.</span>본체 내부 케이블들이 쿨링팬의 회전을 방해하여 소음이 나거나 팬이 멈추는 것을 막기 위해 하는 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">선 정리 (케이블 타이 활용)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q47.</span>CPU나 그래픽카드의 한계 성능 및 안정성을 테스트하기 위해 인위적으로 과부하를 주는 프로그램을 통칭하는 말은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">벤치마크 / 스트레스 테스트 프로그램 (OCCT, Prime95 등)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q48.</span>노트북 액정이 깨졌거나 화면이 나오지 않을 때 외부 모니터와 연결하여 화면을 출력하기 위해 사용하는 포트는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">HDMI / DP 포트</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q49.</span>USB 포트에 외장 하드를 연결했으나 전력 부족으로 인식이 안 될 때 해결할 수 있는 방법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">유전원 USB 허브 사용 또는 본체 뒷면 포트에 연결</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q50.</span>키보드에 물이나 음료수를 쏟았을 때 가장 먼저 취해야 할 조치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PC 전원을 끄고 키보드 연결 케이블 즉시 분리</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 3 -->
+    <div class="category-title">📊 3. 자원 관리 및 최적화 (51~75)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q51.</span>컴퓨터 시스템의 하드웨어 자원(IRQ, DMA, I/O 주소 등)을 운영체제가 자동으로 할당해주는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">플러그 앤 플레이 (Plug & Play)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q52.</span>주변장치가 CPU의 개입 없이 주기억장치(RAM)와 직접 데이터를 주고받아 시스템 속도를 높이는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DMA (Direct Memory Access)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q53.</span>주변장치가 CPU에게 자기를 봐달라고 요청하는 하드웨어 인터럽트 신호 선의 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IRQ (Interrupt Request)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q54.</span>CPU가 주변장치의 상태를 주기적으로 체크하여 데이터 처리 여부를 결정하는 방식(DMA의 반대 개념)은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">폴링 (Polling)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q55.</span>윈도우에서 장치 드라이버의 충돌이나 하드웨어 자원 겹침 현상을 확인하고 제어할 수 있는 관리 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">장치 관리자</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q56.</span>가상 메모리의 크기를 조절하거나 가상 메모리 파일(pagefile.sys)의 위치를 변경하는 윈도우 설정 메뉴는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">고급 시스템 설정 (성능 옵션)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q57.</span>윈도우에서 하드디스크의 읽기/쓰기 성능을 높이기 위해 자주 쓰는 데이터를 메모리에 미리 올려두는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 캐싱 (Disk Caching)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q58.</span>하드디스크 공간을 확보하기 위해 시스템에 남아있는 임시 파일, 로그 파일, 휴지통을 일괄 정리해주는 윈도우 내장 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 정리</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q59.</span>윈도우 부팅 속도를 높이기 위해 불필요한 프로그램이 부팅 시 자동으로 켜지지 않도록 '작업 관리자'에서 조정하는 탭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">시작 앱 (시작프로그램) 탭</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q60.</span>새 하드디스크를 장착했을 때 파일 시스템을 생성하기 전 수행해야 하는 디스크 구획 나눔 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파티션 분할</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q61.</span>윈도우에서 파티션을 생성, 삭제, 확장하거나 드라이브 문자(C:, D: 등)를 변경할 수 있는 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 관리 (diskmgmt.msc)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q62.</span>SSD의 성능 유지를 위해 셀에 남아있는 찌꺼기 데이터(삭제된 파일 흔적)를 미리 지워두는 백그라운드 최적화 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">TRIM (트림)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q63.</span>SSD는 하드디스크와 달리 물리적인 모터가 없으므로 파일 단편화를 해결하기 위한 어떤 작업을 할 필요가 없는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 조각 모음 (SSD는 수명 단축 우려로 제외, 대신 최적화 수행)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q64.</span>컴퓨터의 가상 메모리 공간이 부족할 때 윈도우 화면 하단 작업 표시줄에 뜨는 경고 메시지는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">가상 메모리가 부족합니다</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q65.</span>시스템 오류나 악성코드로 인해 레지스트리가 꼬였을 때를 대비하여 백업 및 복구할 수 있는 레지스트리 편집기 메뉴는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">내보내기 / 가져오기</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q66.</span>CPU 코어 전압을 낮추어 발열과 전력 소모를 줄이면서도 성능을 유지하는 고급 유지보수 튜닝 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">언더볼팅 (Undervolting)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q67.</span>윈도우 11에서 하드디스크 전체를 암호화하여 노트북 분실 시 데이터 유출을 원천 차단하는 보안 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">비트락커 (BitLocker)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q68.</span>오래된 그래픽카드나 CPU의 방열판 사이에 굳어버린 써멀구리스를 닦아내고 새로 바르는 작업을 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">써멀 재도포</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q69.</span>프로그램이 종료되었음에도 메모리(RAM) 자원이 반환되지 않고 시스템에 누적되어 점차 느려지는 현상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">메모리 누수 (Memory Leak)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q70.</span>하드디스크 파티션 형식 중 단일 파일 크기를 최대 4GB까지만 저장할 수 있는 구형 파일 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">FAT32</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q71.</span>FAT32의 한계를 극복하여 대용량 파일(4GB 이상) 저장이 가능하며 안정성이 높은 윈도우 표준 파일 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NTFS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q72.</span>USB 플래시 메모리 등 이동식 디스크에 최적화되어 파일 수명이 길고 대용량을 지원하는 파일 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">exFAT</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q73.</span>시스템 관리자가 원격지에 있는 PC의 전원을 네트워크 신호(매직 패킷)를 보내 강제로 켜는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">WOL (Wake on LAN)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q74.</span>파워서플라이 스펙 표기 중 실제 컴퓨터가 안정적으로 사용할 수 있는 진짜 출력 용량을 뜻하는 용어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">정격 출력 (정격 와트)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q75.</span>컴퓨터 정전이나 전압 강하 시 내부 배터리를 통해 일정 시간 동안 전원을 계속 공급해주는 정전 대비 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">UPS (무정전 전원 공급장치)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 4 -->
+    <div class="category-title">🛡️ 4. 바이러스 예방 및 보안 관리 (76~100)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q76.</span>사용자의 동의 없이 컴퓨터에 침투하여 시스템을 파괴하거나 파일을 증식시키는 유해 소프트웨어를 통칭하는 말은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">악성코드 (멀웨어)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q77.</span>사용자의 중요한 문서 파일을 강제로 암호화한 뒤, 해독해 주는 대가로 금전을 요구하는 최악의 악성코드는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">랜섬웨어 (Ransomware)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q78.</span>윈도우 10/11에 기본 내장되어 있으며, 별도의 비용 없이 강력한 실시간 탐지 성능을 보여주는 백신 프로그램은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">윈도우 디펜더 (Windows Security)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q79.</span>시스템의 정상적인 프로그램처럼 위장하여 숨어 있다가 특정 조건에서 시스템을 파괴하거나 정보를 빼내는 악성코드는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">트로이 목마 (Trojan Horse)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q80.</span>인터넷을 통해 스스로를 복제하여 네트워크 전체를 마비시키는, 감염 대상을 필요로 하지 않는 독립형 악성코드는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">웜 (Worm)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q81.</span>웹 브라우저의 시작 페이지를 강제로 변경하거나 원치 않는 팝업 광고를 지속적으로 띄우는 프로그램 종류는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">애드웨어 (Adware)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q82.</span>컴퓨터 사용자의 비밀번호나 개인정보, 키보드 입력 값 등을 몰래 가로채 외부로 전송하는 스파이 프로그램은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">키로거 (Keylogger) / 스파이웨어</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q83.</span>악성코드 감염을 예방하기 위해 가장 기본적으로 수행해야 하는 운영체제 및 백신의 필수 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">보안 업데이트 및 최신 패치 유지</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q84.</span>출처가 불분명한 이메일의 첨부 파일이나 링크를 클릭했을 때 가장 쉽게 감염될 수 있는 악성코드 유형은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">랜섬웨어 / 트로이 목마</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q85.</span>윈도우에서 실행 창(Win+R)에 입력하여 내장된 악성 소프트웨어 제거 도구를 실행하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">mrt</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q86.</span>인터넷 브라우저에서 쿠키나 방문 기록, 캐시 등을 정기적으로 삭제해야 하는 보안상의 주요 원인은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">개인정보 노출 방지 및 세션 하이재킹 예방</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q87.</span>공공장소나 카페의 보안이 걸려 있지 않은 공용 와이파이(Wi-Fi)를 이용해 금융 거래를 할 때 발생할 수 있는 위험은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">네트워크 패킷 스니핑 (데이터 도청 및 탈취)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q88.</span>윈도우 로그인 시 비밀번호 입력 대신 얼굴 인식이나 지문 인식을 사용하는 마이크로소프트의 생체 인증 보안 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Windows Hello</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q89.</span>악성 프로그램이 시스템의 중요한 시스템 폴더나 레지스트리를 함부로 변조하지 못하도록 관리자 권한을 통제하는 보안 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">UAC (사용자 계정 컨트롤)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q90.</span>네트워크 외부의 불법 침입을 차단하고 허가된 패킷만 통과시키는 역할을 하는 윈도우 기본 보안 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">방화벽 (Firewall)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q91.</span>웹사이트 주소가 'http://'가 아닌 보안 레이어가 추가되어 데이터가 암호화 전송되는 안전한 주소 접두사는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">https://</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q92.</span>백신 프로그램이 신종 바이러스를 탐지할 수 있도록 매일 업데이트해야 하는 바이러스 고유의 데이터베이스 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">바이러스 패턴 (시그니처) 파일</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q93.</span>감염된 파일을 치료할 수 없거나 신종 바이러스로 의심될 때, 백신 프로그램이 임시로 파일을 격리해두는 안전한 공간은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">검역소 (격리소)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q94.</span>해커가 감염된 수많은 PC(좀비 PC)들을 조종하여 특정 타깃 웹사이트에 동시에 대량의 패킷을 보내 마비시키는 공격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DDoS 공격 (분산 서비스 거부 공격)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q95.</span>DDoS 공격에 감염되어 해커의 명령을 수행하는 상태가 된 피해자 PC를 부르는 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">좀비 PC (Zombie PC)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q96.</span>해커가 원격에서 좀비 PC들을 자유롭게 제어하기 위해 구축한 악성코드 제어 네트워크의 명칭은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">봇넷 (Botnet)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q97.</span>운영체제나 프로그램의 설계 오류로 인해 발생한 보안상의 취약점을 해커가 발견하자마자 패치가 나오기 전 공격하는 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">제로드이 공격 (Zero-Day Attack)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q98.</span>사용자를 속여 가짜 금융 사이트로 접속을 유도한 뒤 보안카드 번호 등 금융 정보를 탈취하는 사기 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">피싱 (Phishing / 파밍)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q99.</span>스마트폰 문자 메시지를 통해 악성 앱 설치 링크를 보내 개인정보 및 소액결제를 유도하는 해킹 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">스미싱 (Smishing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q100.</span>중요한 데이터를 랜섬웨어나 하드디스크 고장으로부터 완벽하게 보호할 수 있는 유일하고 가장 확실한 유지보수 방법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">주기적인 외부 저장소(외장하드/클라우드) 백업</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© PC정비사 2급 필기 완전정복 요약집</p>
+    </footer>
+
+    <script>
+        function toggleAnswer(element) {
+            element.classList.toggle('revealed');
+        }
+
+        function switchTheme(checkbox) {
+            if (checkbox.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+    </script>
+</body>
+</html>

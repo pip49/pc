@@ -1,0 +1,977 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC정비사 2급 필기 요약 - 1과목 PC운영체제 (다크모드 지원)</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #3498db;
+            --accent-color: #e74c3c;
+            --category-bg: #eef2f7;
+            --border-color: #dcdde1;
+            --info-bg: #e3f2fd;
+            --info-border: #2196f3;
+            --ans-bg: #f8f9fa;
+            --ans-revealed: #fadbd8;
+            --header-grade: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #64b5f6;
+            --accent-color: #ff7675;
+            --category-bg: #2d2d2d;
+            --border-color: #3d3d3d;
+            --info-bg: #112233;
+            --info-border: #64b5f6;
+            --ans-bg: #2d2d2d;
+            --ans-revealed: #442222;
+            --header-grade: linear-gradient(135deg, #1e272e, #2c3e50);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        /* 컨트롤 바 (테마 토글 스위치) */
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .theme-switch {
+            inline-size: 50px;
+            position: relative;
+            block-size: 26px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input:checked + .slider {
+            background-color: #3498db;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 10px;
+            background: var(--header-grade);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background-color: var(--info-bg);
+            border-left: 4px solid var(--info-border);
+            padding: 12px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .quiz-container {
+            display: block;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .quiz-num {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .quiz-question {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .quiz-answer-block {
+            background-color: var(--ans-bg);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px dashed var(--border-color);
+            text-align: center;
+        }
+
+        .quiz-answer-block .hint {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .quiz-answer-block .answer {
+            display: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .quiz-answer-block.revealed {
+            background-color: var(--ans-revealed);
+            border-color: var(--accent-color);
+        }
+
+        .quiz-answer-block.revealed .hint {
+            display: none;
+        }
+
+        .quiz-answer-block.revealed .answer {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 30px 0;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 다크모드 토글 스위치 바 -->
+    <div class="control-bar">
+        <div class="theme-switch-wrapper">
+            <span>🌙 야간 다크모드</span>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="switchTheme(this)">
+                <div class="slider"></div>
+            </label>
+        </div>
+    </div>
+
+    <header>
+        <h1>PC정비사 2급 필기 초압축 100선</h1>
+        <p>제1과목: PC 운영체제 (Core 100)</p>
+    </header>
+
+    <div class="info-box">
+        💡 <strong>학습 팁:</strong> 질문을 읽고 생각한 뒤, 아래 <strong>[정답 보기]</strong> 상자를 터치하면 답이 나타납니다. 상단 스위치로 다크모드를 켜고 끌 수 있습니다.
+    </div>
+
+    <!-- 테마 1 -->
+    <div class="category-title">📂 1. 운영체제 핵심 이론 및 구조 (1~20)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q1.</span>컴퓨터 하드웨어와 사용자 사이에서 중재자 역할을 하며, 자원을 효율적으로 관리하는 시스템 소프트웨어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">운영체제 (OS)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q2.</span>운영체제의 목적 4가지는 처리능력 향상, 응답시간 단축, 신뢰도 향상과 무엇인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">사용 가능도 향상</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q3.</span>컴퓨터 시스템이 주어진 시간 동안 처리할 수 있는 일의 양을 뜻하는 운영체제 성능 평가는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">처리 능력 (Throughput)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q4.</span>사용자가 시스템에 작업을 의뢰한 후 그 결과를 얻을 때까지 걸리는 시간은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">반환 시간 (Turnaround Time)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q5.</span>여러 개의 프로그램을 각각 독립된 기억장소에 나누어 적재한 후, CPU가 번갈아가며 실행하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">다중 프로그래밍 (Multi-programming)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q6.</span>한 대의 컴퓨터(CPU)를 여러 사용자가 동시에 대화식으로 공유하여 사용하는 운영체제 운영 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">시분할 시스템 (Time Sharing System)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q7.</span>여러 개의 CPU가 하나의 메모리를 공유하여 여러 작업을 동시에 처리하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">다중 처리 시스템 (Multi-processing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q8.</span>데이터가 발생했을 때 중간 저장 없이 즉시 처리하여 결과를 반환하는 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">실시간 처리 시스템 (Real-time Processing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q9.</span>여러 장소의 컴퓨터 시스템에 작업을 분산시켜 네트워크를 통해 공동 처리하는 구조는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">분산 처리 시스템 (Distributed Processing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q10.</span>운영체제의 가장 핵심적인 부분으로, 하드웨어 제어, 메모리 관리, 프로세스 제어 등을 담당하는 상주 프로그램은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">커널 (Kernel)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q11.</span>사용자의 명령을 입력받아 해석하고 운영체제 커널에 전달하는 명령 해설기 인터페이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">쉘 (Shell)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q12.</span>실행 중인 프로그램, 또는 디스크에 있던 프로그램이 메모리에 적재되어 CPU에 의해 실행되는 동적인 상태는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">프로세스 (Process)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q13.</span>프로세스 제어 블록을 뜻하며, 운영체제가 프로세스를 관리하기 위해 필요한 정보를 저장하는 구조체는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PCB (Process Control Block)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q14.</span>현재 실행 중인 프로세스의 CPU 상태를 저장하고, 새로운 프로세스의 상태로 교체하는 제어 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">문맥 교환 (Context Switching)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q15.</span>두 개 이상의 프로세스가 서로가 가진 자원을 기다리며 무한 대기 상태에 빠지는 현상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">교착 상태 (Deadlock)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q16.</span>컴퓨터 하드웨어의 논리적인 주소 공간보다 더 큰 프로그램을 실행하기 위해 보조기억장치를 주기억장치처럼 사용하는 메모리 관리 기법은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">가상 메모리 (Virtual Memory)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q17.</span>가상 메모리 체제에서 프로세스가 페이지를 계속 요청하여 페이지 부재가 자주 발생해 CPU 효율이 급격히 떨어지는 현상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">스레싱 (Thrashing)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q18.</span>운영체제가 하드웨어를 직접 제어하지 않고 소프트웨어 계층을 통해 제어하기 위해 제공하는 표준 프로그래밍 인터페이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">API (Application Programming Interface)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q19.</span>하드웨어 장치와 운영체제 간의 통신을 가능하게 해주는 제어 소프트웨어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">장치 드라이버 (Device Driver)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q20.</span>컴퓨터에 새로운 하드웨어를 장착했을 때, 운영체제가 이를 자동으로 인식하고 드라이버를 설정해주는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">플러그 앤 플레이 (Plug & Play)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 2 -->
+    <div class="category-title">💻 2. Windows 아키텍처 및 핵심 기능 (21~45)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q21.</span>윈도우가 내부적으로 자원을 관리하기 위해 사용하는 32비트 또는 64비트 정수형 식별 번호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">핸들 (Handle)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q22.</span>정식 명칭은 New Technology File System으로, 대용량 지원, 보안, 파일 압축, 암호화 등을 지원하는 윈도우 표준 파일 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NTFS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q23.</span>윈도우 시스템의 이벤트를 기록하는 로그 파일 확장자는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">.evtx (이벤트 로그)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q24.</span>윈도우의 모든 하드웨어, 소프트웨어 설정 정보 및 사용자 프로필 정보가 저장되는 중앙 집중식 계층형 데이터베이스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">레지스트리 (Registry)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q25.</span>레지스트리를 편집하기 위해 실행 창(Win+R)에 입력하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">regedit</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q26.</span>부팅 시 하드웨어 점검(POST)을 수행하고 제어권을 운영체제로 넘겨주는 메인보드의 기본 입출력 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">BIOS (CBIOS)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q27.</span>전통적인 BIOS의 한계를 극복하고 2TB 이상의 고용량 디스크 부팅 및 보안 부팅을 지원하는 최신 마더보드 펌웨어 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">UEFI</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q28.</span>UEFI 시스템에서 사용되며, 최대 128개의 파티션을 지원하고 2TB 이상의 디스크를 인식할 수 있는 파티션 형식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">GPT (GUID Partition Table)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q29.</span>기존의 전통적인 파티션 형식으로, 최대 4개의 주 파티션과 2TB 이하의 디스크 공간만 지원하는 형식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MBR (Master Boot Record)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q30.</span>파일이나 폴더가 디스크에서 연속적으로 저장되지 않고 흩어져 저장되어 속도가 느려지는 현상을 무엇이라 하는가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">단편화 (Fragmentation)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q31.</span>단편화 현상을 해결하여 디스크 읽기/쓰기 속도를 향상시키는 윈도우 내장 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">드라이브 조각 모음 및 최적화</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q32.</span>윈도우 부팅 시 F8 등을 눌러 진입하며, 최소한의 드라이버와 서비스만 로드하여 시스템 오류를 해결하는 모드는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">안전 모드 (Safe Mode)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q33.</span>사용자가 컴퓨터를 사용하지 않을 때 열려 있는 문서와 프로그램을 메모리에 유지한 채 컴퓨터를 저전력 상태로 전환하는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">절전 모드 (Sleep Mode)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q34.</span>작업 중인 내용을 메모리가 아닌 하드디스크에 저장하고 컴퓨터 전원을 완전히 차단하는 절전 방식은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">최대 절전 모드 (Hibernation)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q35.</span>컴퓨터 사용 도중 하드웨어나 시스템 소프트웨어의 치명적인 오류로 인해 화면이 파랗게 변하는 현상은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">블루스크린 (BSOD)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q36.</span>윈도우 10/11에서 바이러스, 악성코드, 스파이웨어 등으로부터 실시간으로 시스템을 보호하는 내장 백신 프로그램은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Windows Defender (보안)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q37.</span>허가되지 않은 네트워크 연결을 차단하여 외부 해킹으로부터 PC를 보호하는 윈도우 내장 보안 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Windows 방화벽 (Firewall)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q38.</span>악성 프로그램이 사용자 동의 없이 관리자 권한을 획득하는 것을 방지하기 위해 권한 승인을 요구하는 보안 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">UAC (사용자 계정 컨트롤)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q39.</span>윈도우에서 네트워크 상태를 점검하거나 관리자 작업을 수행하기 위해 사용하는 텍스트 기반의 명령줄 창은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">명령 프롬프트 (CMD)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q40.</span>명령 프롬프트보다 더 강력한 관리 스크립트 작성 및 개체 기반 제어가 가능한 최신 윈도우 셸 환경은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">PowerShell</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q41.</span>두 개 이상의 하드디스크를 하나로 묶어 성능을 높이거나 백업용으로 안전성을 높이는 디스크 구성 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAID</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q42.</span>RAID 구성 중 데이터를 여러 디스크에 나누어 저장(스트라이핑)하여 속도는 빠르나 백업 기능이 없는 레벨은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAID 0</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q43.</span>RAID 구성 중 두 개의 디스크에 동일한 데이터를 동시에 저장(미러링)하여 결함 허용 능력을 극대화한 레벨은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">RAID 1</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q44.</span>하나의 물리적 하드디스크를 여러 개의 논리적 드라이브(C:, D: 등)로 나누는 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">파티션 분할 (Partitioning)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q45.</span>파티션 생성 후 디스크를 사용하기 위해 특정 파일 시스템(NTFS 등)으로 초기화하는 작업은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">포맷 (Format)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 3 -->
+    <div class="category-title">⚙️ 3. 시스템 관리, 문제 해결 및 명령어 (46~70)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q46.</span>현재 실행 중인 프로세스, CPU 및 메모리 사용량, 네트워크 상태를 실시간 모니터링하고 강제 종료할 수 있는 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">작업 관리자 (Task Manager)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q47.</span>작업 관리자를 바로 호출하는 단축키 조합은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Ctrl + Shift + Esc</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q48.</span>실행 창(Win+R)에서 시스템 구성 도구를 실행하여 시작프로그램과 서비스를 제어하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">msconfig</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q49.</span>윈도우 시스템 파일이 손상되었을 때 이를 검사하고 복구하는 명령 프롬프트 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">sfc /scannow</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q50.</span>디스크의 오류를 검사하고 배드 섹터를 찾아 복구 시도를 하는 명령 프롬프트 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">chkdsk</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q51.</span>네트워크 상에서 특정 호스트(IP)와 연결이 잘 되어 있는지 패킷을 보내 가부 및 응답시간을 확인하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ping</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q52.</span>자신의 컴퓨터에 설정된 IP 주소, 서브넷 마스크, 게이트웨이 주소를 확인하는 명령 프롬프트 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ipconfig</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q53.</span>ipconfig 명령어 사용 시 DHCP 서버로부터 IP 주소를 새로 할당받기 전 기존 할당을 해제하는 옵션은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ipconfig /release</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q54.</span>ipconfig 명령어 사용 시 DHCP 서버에 IP 주소 재할당을 요청하는 옵션은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ipconfig /renew</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q55.</span>목적지 IP 주소까지 거치는 경로(라우터)를 추적하여 어느 구간에서 네트워크 병목이 생기는지 확인하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">tracert</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q56.</span>특정 도메인 네임의 IP 주소를 조회하거나 DNS 서버의 동작 상태를 확인할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">nslookup</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q57.</span>자신의 PC에 열려 있는 포트 정보와 연결된 외부 IP 주소 등 네트워크 연결 상태를 보여주는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">netstat</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q58.</span>원격지에 있는 컴퓨터에 텍스트 기반으로 접속하여 제어할 수 있는 보안되지 않은 기본 원격 통신 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Telnet</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q59.</span>텔넷의 보안 취약점을 해결하기 위해 데이터 패킷을 암호화하여 통신하는 원격 접속 프로토콜은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SSH (Secure Shell)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q60.</span>인터넷 브라우저의 캐시나 임시 파일, 휴지통 등을 비워 디스크 여유 공간을 확보하는 내장 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">디스크 정리</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q61.</span>디스크 관리, 장치 관리자, 이벤트 뷰어 등 관리 도구를 통합하여 보여주는 콘솔 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">compmgmt.msc</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q62.</span>하드디스크의 볼륨 생성, 삭제, 문자 변경 등을 수행하는 디스크 관리 도구 실행 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">diskmgmt.msc</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q63.</span>PC에 장착된 하드웨어 장치들의 목록을 확인하고, 드라이버를 업데이트하거나 충돌 여부를 확인하는 도구 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">devmgmt.msc</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q64.</span>윈도우 시스템이 비정상적으로 작동할 때, 이전의 정상적인 상태로 시스템 설정을 되돌리는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">시스템 복원</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q65.</span>매주 또는 매달 정기적으로 특정 프로그램을 자동으로 실행하도록 설정하는 윈도우 관리 도구는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">작업 스케줄러</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q66.</span>사용자 컴퓨터에 유동 IP를 자동으로 할당해주는 프로토콜 서비스는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DHCP</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q67.</span>문자 형태로 된 도메인 네임(naver.com)을 숫자 형태의 IP 주소로 변환해주는 시스템은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">DNS (Domain Name System)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q68.</span>윈도우에서 프린터로 출력할 데이터를 임시 공간(하드디스크)에 저장해두어 CPU가 다른 작업을 할 수 있게 돕는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">스풀링 (Spooling)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q69.</span>네트워크 프린터를 공유할 때 사용하는 파일 및 프린터 공유 프로토콜 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SMB (Server Message Block)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q70.</span>컴퓨터에 로그인한 사용자 세션을 완전히 종료하고 시작 화면으로 나가는 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">로그아웃 (Sign out)</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 4 -->
+    <div class="category-title">🐧 4. Linux / Unix 핵심 기초 (71~90)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q71.</span>리눅스/유닉스 시스템에서 모든 권한을 가진 최상위 관리자 계정 이름은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">root</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q72.</span>리눅스 파일 시스템에서 모든 디렉터리의 출발점이 되는 최상위 디렉터리 기호는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">/ (루트 디렉터리)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q73.</span>리눅스에서 현재 디렉터리에 있는 파일과 폴더의 목록을 보여주는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ls</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q74.</span>리눅스에서 현재 작업 중인 디렉터리의 절대 경로를 화면에 표시하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">pwd</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q75.</span>리눅스에서 디렉터리를 이동할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">cd</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q76.</span>리눅스에서 새로운 디렉터리(폴더)를 생성하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">mkdir</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q77.</span>리눅스에서 빈 파일을 생성하거나 파일의 수정 시간을 현재 시간으로 갱신하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">touch</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q78.</span>리눅스에서 파일을 복사할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">cp</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q79.</span>리눅스에서 파일을 이동하거나 이름을 변경할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">mv</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q80.</span>리눅스에서 파일이나 디렉터리를 삭제할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">rm</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q81.</span>리눅스에서 파일의 내용(텍스트)을 화면에 연속으로 출력해주는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">cat</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q82.</span>리눅스에서 파일이나 디렉터리의 권한(Read, Write, Execute)을 변경하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">chmod</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q83.</span>리눅스 파일 권한 중 'rwxr-xr-x'를 8진수 숫자로 표현하면 무엇인가?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">755</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q84.</span>리눅스에서 파일이나 디렉터리의 소유자 및 소유 그룹을 변경하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">chown</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q85.</span>리눅스에서 현재 실행 중인 프로세스의 목록을 보여주는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">ps</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q86.</span>리눅스에서 특정 프로세스를 PID를 이용해 강제 종료하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">kill</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q87.</span>리눅스에서 텍스트 파일 내에서 특정 문자열을 검색할 때 사용하는 강력한 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">grep</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q88.</span>리눅스 콘솔 창의 텍스트가 복잡할 때 화면을 깨끗하게 지워주는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">clear</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q89.</span>리눅스 환경에서 가장 널리 쓰이는 표준 텍스트 편집기 프로그램 이름은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">vi (또는 vim)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q90.</span>리눅스 시스템을 즉시 안전하게 종료할 때 사용하는 명령어는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">shutdown -h now</span>
+            </div>
+        </div>
+    </div>
+    <!-- 테마 5 -->
+    <div class="category-title">🌐 5. 네트워크 기초 이론 및 최신 OS 특징 (91~100)</div>
+    <div class="quiz-container">
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q91.</span>네트워크 하드웨어(랜카드)마다 고유하게 부여된 물리적 주소로, 48비트 길이인 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">MAC 주소</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q92.</span>현재 널리 쓰이는 32비트 길이의 인터넷 프로토콜 주소 체계는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IPv4</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q93.</span>IPv4의 주소 고갈 문제를 해결하기 위해 도입된 128비트 길이의 차세대 주소 체계는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">IPv6</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q94.</span>네트워크 주소 체계에서 네트워크 부분과 호스트 부분을 구별하기 위해 사용하는 32비트 주소 마스크는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">서브넷 마스크 (Subnet Mask)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q95.</span>내부 네트워크에서 외부 인터넷 네트워크로 나가는 출입구 역할을 하는 라우터나 장치의 주소는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">게이트웨이 (Gateway)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q96.</span>사설 IP 주소를 공인 IP 주소로 변환하여 하나의 공인 IP로 여러 대의 PC가 인터넷을 쓸 수 있게 하는 기술은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">NAT (Network Address Translation)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q97.</span>네트워크 상에서 패킷을 목적지까지 가장 빠르고 최적의 경로로 전달해주는 레이어 3 장비는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">라우터 (Router)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q98.</span>물리적으로 다른 네트워크(LAN)를 연결하여 패킷의 데이터 포맷을 변환해주는 장치는?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">게이트웨이 (Gateway 장비)</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q99.</span>인터넷상에서 데이터를 안전하게 전송하기 위해 데이터 패킷을 암호화하는 통신 보안 프로토콜 규격은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">SSL / TLS</span>
+            </div>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-question"><span class="quiz-num">Q100.</span>윈도우 11에서 새롭게 기본 탑재되었으며, 인공지능 기반으로 사용자의 작업을 돕는 AI 비서 기능은?</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 정답 보기</span>
+                <span class="answer">Copilot (코파일럿)</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© PC정비사 2급 필기 완전정복 요약집</p>
+    </footer>
+
+    <script>
+        function toggleAnswer(element) {
+            element.classList.toggle('revealed');
+        }
+
+        function switchTheme(checkbox) {
+            if (checkbox.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+    </script>
+</body>
+</html>
