@@ -1,0 +1,604 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC정비사 2급 필기 - 필수 암기 30대 핵심 정리</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --border-color: #dcdde1;
+            --ans-bg: #f8f9fa;
+            --ans-revealed: #ebf5fb;
+            --header-grade: linear-gradient(135deg, #1e272e, #2c3e50);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #3d3d3d;
+            --ans-bg: #2d2d2d;
+            --ans-revealed: #1a252f;
+            --header-grade: linear-gradient(135deg, #0f141c, #1e272e);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .theme-switch {
+            inline-size: 50px;
+            position: relative;
+            block-size: 26px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 10px;
+            background: var(--header-grade);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            word-break: keep-all;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .quiz-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .quiz-answer-block {
+            background-color: var(--ans-bg);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px dashed var(--border-color);
+        }
+
+        .hint {
+            display: block;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .answer {
+            display: none;
+            font-size: 0.95rem;
+            word-break: keep-all;
+        }
+
+        /* 줄바꿈 및 리스트 형태 보존을 위한 클래스 */
+        .answer p {
+            margin-bottom: 6px;
+        }
+        .answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .quiz-answer-block.revealed {
+            background-color: var(--ans-revealed);
+            border-color: #3498db;
+        }
+
+        .quiz-answer-block.revealed .hint {
+            display: none;
+        }
+
+        .quiz-answer-block.revealed .answer {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-bar">
+        <div class="theme-switch-wrapper">
+            <span>🌙 야간 다크모드</span>
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="switchTheme(this)">
+                <div class="slider"></div>
+            </label>
+        </div>
+    </div>
+
+    <header>
+        <h1>PC정비사 2급 필기 완전정복</h1>
+        <p>필수 암기 30대 핵심 정리 (내용 무삭제 원본)</p>
+    </header>
+
+    <div class="quiz-container">
+
+        <!-- 1 -->
+        <div class="quiz-card">
+            <div class="quiz-title">1. 윈도우 핵심 실행 명령어 (1과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>regedit</b> : 레지스트리 편집기</p>
+                    <p>• <b>msconfig</b> : 시스템 구성 (부팅 옵션 및 시작프로그램 제어)</p>
+                    <p>• <b>diskmgmt.msc</b> : 디스크 관리 (파티션 분할, 드라이브 문자 변경)</p>
+                    <p>• <b>devmgmt.msc</b> : 장치 관리자 (하드웨어 충돌 및 드라이버 확인)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="quiz-card">
+            <div class="quiz-title">2. 리눅스(Linux) 기본 명령어 (1과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>pwd</b> : 현재 작업 중인 디렉터리 경로 표시</p>
+                    <p>• <b>ls</b> : 디렉터리 내부 파일 목록 보기</p>
+                    <p>• <b>cd</b> : 디렉터리 이동</p>
+                    <p>• <b>chmod</b> : 파일이나 디렉터리의 권한(Permission) 변경</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="quiz-card">
+            <div class="quiz-title">3. CPU 성능 지표 및 캐시 메모리 (2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>클럭(Clock):</b> CPU의 동작 속도 단위 (Hz)</p>
+                    <p>• <b>캐시 메모리(Cache):</b> CPU와 RAM 사이의 속도 차이를 줄여주는 고속 버퍼 메모리 (SRAM 사용)</p>
+                    <p>• <b>가상 메모리:</b> RAM 용량이 부족할 때 하드디스크의 일부(pagefile.sys)를 RAM처럼 쓰는 기술</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="quiz-card">
+            <div class="quiz-title">4. 부팅 에러 비프(Beep)음 식별 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>삐-, 삐-, 삐- (길게 연속 반복):</b> 메모리(RAM) 장착 불량 또는 접촉 불량</p>
+                    <p>• <b>삐- 삑, 삑 (길게 한번, 짧게 두세번):</b> 그래픽카드(VGA) 장착 불량 또는 고장</p>
+                    <p>• <b>삑 (짧게 한번):</b> 정상 부팅 완료</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="quiz-card">
+            <div class="quiz-title">5. 하드디스크 자가 진단 및 구조 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>S.M.A.R.T.:</b> 하드디스크 고장을 사전에 모니터링하고 진단하는 자체 기술</p>
+                    <p>• <b>물리적 배드섹터:</b> 디스크 표면(플래터)이 긁혀서 생긴 복구 불가능한 결함</p>
+                    <p>• <b>논리적 배드섹터:</b> 소프트웨어 오류로 생긴 결함으로, 검사 도구(chkdsk)나 포맷으로 복구 가능</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="quiz-card">
+            <div class="quiz-title">6. 가상 메모리 부족 및 메모리 누수 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>메모리 누수(Memory Leak):</b> 프로그램이 종료되었는데도 RAM 자원이 반환되지 않고 묶여 있어 시스템이 점차 느려지는 현상</p>
+                    <p>• <b>대책:</b> 불필요한 시작프로그램을 줄이거나, 가상 메모리 파일의 크기를 수동으로 확장</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="quiz-card">
+            <div class="quiz-title">7. 악성코드 유형 구분 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>랜섬웨어:</b> 파일을 암호화하고 인질극을 벌이며 금전을 요구</p>
+                    <p>• <b>웜(Worm):</b> 감염 대상 파일 없이도 스스로를 복제하여 네트워크를 마비시킴</p>
+                    <p>• <b>트로이 목마:</b> 정상 프로그램으로 위장하여 숨어 있다가 정보를 빼냄</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 -->
+        <div class="quiz-card">
+            <div class="quiz-title">8. OSI 7계층 핵심 장비와 특징 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>1계층 (물리):</b> 더미 허브, 리피터 (신호 증폭 및 분배)</p>
+                    <p>• <b>2계층 (데이터링크):</b> 스위칭 허브, 브리지 (MAC 주소 기반 정밀 전송, 데이터 단위: 프레임)</p>
+                    <p>• <b>3계층 (네트워크):</b> 라우터, L3 스위치 (IP 주소 기반 최적 경로 검색, 데이터 단위: 패킷)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9 -->
+        <div class="quiz-card">
+            <div class="quiz-title">9. 주요 프로토콜과 포트(Port) 번호 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>SSH (보안 원격접속):</b> 22번</p>
+                    <p>• <b>DNS (도메인을 IP로 변환):</b> 53번</p>
+                    <p>• <b>HTTP (일반 웹):</b> 80번 / <b>HTTPS (보안 웹):</b> 443번</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10 -->
+        <div class="quiz-card">
+            <div class="quiz-title">10. IPv4 주소 클래스(Class) 구분 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>A 클래스:</b> 1 ~ 126 (대규모) / <b>B 클래스:</b> 128 ~ 191 (중규모)</p>
+                    <p>• <b>C 클래스:</b> 192 ~ 223 (소규모, 공유기에서 흔히 쓰는 192.168.x.x 대역)</p>
+                    <p>• <b>127.0.0.1:</b> 내 컴퓨터 랜카드를 테스트하는 루프백(Loopback) 주소</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11 -->
+        <div class="quiz-card">
+            <div class="quiz-title">11. 윈도우 파일 시스템 특징 (1/3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>FAT32:</b> 구형 규격, 단일 파일 크기를 최대 4GB까지만 저장 가능</p>
+                    <p>• <b>NTFS:</b> 윈도우 표준 규격, 대용량 파일 저장 가능, 보안 및 압축 기능 지원</p>
+                    <p>• <b>exFAT:</b> 이동식 디스크(USB, SD카드) 전용 규격, FAT32의 4GB 제한을 해결함</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12 -->
+        <div class="quiz-card">
+            <div class="quiz-title">12. 레이드(RAID) 디스크 구성 방식 (2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>RAID 0 (스트라이핑):</b> 데이터를 나누어 저장하여 속도가 가장 빠름 (하나라도 고장 나면 전멸)</p>
+                    <p>• <b>RAID 1 (미러링):</b> 똑같은 내용을 두 디스크에 동시 저장하여 안정성이 가장 높음 (용량 효율 50%)</p>
+                    <p>• <b>RAID 5:</b> 성능과 안정성을 모두 챙긴 방식, 최소 3개의 디스크 필요, 1개 고장 시 복구 가능</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13 -->
+        <div class="quiz-card">
+            <div class="quiz-title">13. 메인보드 CMOS 비밀번호 분실 시 초기화 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>방법:</b> 메인보드에 장착된 동전 모양 배터리(CR2032)를 일시적으로 뺐다 꽂거나, 메인보드의 'Clear CMOS' 점퍼 핀을 드라이버 등으로 쇼트(Short)시키면 바이오스 설정과 비밀번호가 공장 초기화됩니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14 -->
+        <div class="quiz-card">
+            <div class="quiz-title">14. 파워 서플라이 정격 출력의 의미 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>정격 출력:</b> 표기된 최대 순간 출력이 아니라, 컴퓨터가 가동되는 동안 지속적이고 안정적으로 공급할 수 있는 실제 용량를 뜻합니다. 정격 출력이 부족하면 고부하 시 시스템이 자꾸 다운됩니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15 -->
+        <div class="quiz-card">
+            <div class="quiz-title">15. SSD 최적화 명령어 'TRIM' (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>TRIM(트림):</b> SSD는 하드디스크와 달리 덮어쓰기가 안 되므로, 파일이 삭제된 공간의 찌꺼기 데이터를 백그라운드에서 미리 지워두는 성능 유지 기술입니다. 구조적 특성상 SSD는 디스크 조각 모음을 수행할 필요가 없습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16 -->
+        <div class="quiz-card">
+            <div class="quiz-title">16. 유선 LAN선(UTP) 규격 및 배열 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>RJ-45:</b> 유선 랜선 끝에 찍는 플라스틱 커넥터 명칭</p>
+                    <p>• <b>Cat.5e / Cat.6:</b> 기가비트(1Gbps) 인터넷 속도를 지원하는 랜케이블 카테고리 등급</p>
+                    <p>• <b>다이렉트 케이블:</b> PC와 공유기를 연결할 때 / <b>크로스 케이블:</b> PC와 PC를 1:1로 직접 연결할 때</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17 -->
+        <div class="quiz-card">
+            <div class="quiz-title">17. 무선 LAN(Wi-Fi) 표준 규격 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>IEEE 802.11n:</b> Wi-Fi 4 (2.4GHz / 5GHz 겸용)</p>
+                    <p>• <b>IEEE 802.11ac:</b> Wi-Fi 5 (5GHz 전용 고속 규격)</p>
+                    <p>• <b>IEEE 802.11ax:</b> Wi-Fi 6 (대용량 다중 접속 최적화 최신 규격)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18 -->
+        <div class="quiz-card">
+            <div class="quiz-title">18. 네트워크 주소 3대 통신 방식 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>유니캐스트(Unicast):</b> 가장 일반적인 1 대 1 통신</p>
+                    <p>• <b>멀티캐스트(Multicast):</b> 특정 그룹을 지정하여 전송하는 1 대 다(Group) 통신</p>
+                    <p>• <b>브로드캐스트(Broadcast):</b> 동일 네트워크 안의 모든 호스트에게 무조건 뿌리는 1 대 전체 통신</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19 -->
+        <div class="quiz-card">
+            <div class="quiz-title">19. IP 자동 할당 프로토콜 DHCP (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>DHCP:</b> 컴퓨터가 켜질 때 공유기(서버)로부터 사용할 수 있는 유동 IP 주소를 자동으로 받아와 세팅해 주는 프로토콜입니다. 만약 이 DHCP 서버에 오류가 생겨 IP를 못 받으면 윈도우는 169.254.x.x라는 임시 주소(APIPA)를 강제로 부여합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20 -->
+        <div class="quiz-card">
+            <div class="quiz-title">20. 서브넷 마스크(Subnet Mask)의 역할 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>역할:</b> 주어진 IP 주소에서 '네트워크 ID' 부분과 '호스트 ID' 부분을 구별하기 위해 겹쳐서 사용하는 필터(마스크)입니다. C 클래스의 기본 서브넷 마스크는 255.255.255.0입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21 -->
+        <div class="quiz-card">
+            <div class="quiz-title">21. 윈도우 부팅 및 시스템 복구 '안전 모드' (1과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>안전 모드 (Safe Mode):</b> 시스템에 심각한 오류가 생겼거나 드라이버 충돌로 정상 부팅이 안 될 때, 최소한의 기본 드라이버(VGA, 키보드, 마우스)만 로딩하여 부팅하는 진단용 모드입니다. 악성코드를 치료하거나 꼬인 그래픽 드라이버를 삭제할 때 주로 진입합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22 -->
+        <div class="quiz-card">
+            <div class="quiz-title">22. 프로세스와 스레드(Thread)의 개념 (1/2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>프로세스:</b> 메모리에 적재되어 현재 실행 중인 프로그램의 단위</p>
+                    <p>• <b>스레드(Thread):</b> CPU가 처리하는 실제 작업의 최단 흐름 단위. 1개의 프로세스 내부에 여러 개의 스레드가 동시에 돌아갈 수 있습니다(멀티스레딩).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23 -->
+        <div class="quiz-card">
+            <div class="quiz-title">23. CPU 오버클러킹(Overclocking)과 부작용 (2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>오버클러킹:</b> CPU 제조사가 정해놓은 한계 클럭 속도를 강제로 높여 성능을 끌어올리는 튜닝 기법입니다.</p>
+                    <p>• <b>부작용:</b> 과도한 발열이 발생하여 시스템이 다운되거나 부품 수명이 급격히 단축되므로, 고성능 사제 쿨러 장착과 전압 미세 조절(언더볼팅 등)이 필수적으로 동반됩니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24 -->
+        <div class="quiz-card">
+            <div class="quiz-title">24. 주기억장치 RAM의 종류와 특징 (2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>DRAM (동적 RAM):</b> 우리가 흔히 말하는 메인 메모리. 구조가 단순해 대용량으로 만들기 쉽지만, 전원이 켜져 있어도 시간이 지나면 충전된 전하가 방전되므로 주기적인 재충전(Refresh) 회로가 필수적입니다.</p>
+                    <p>• <b>SRAM (정적 RAM):</b> CPU 캐시 메모리에 사용됨. 속도가 매우 빠르고 전원이 켜져 있는 동안 데이터가 유지되나, 구조가 복잡해 가격이 비싸고 대용량화가 어렵습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 25 -->
+        <div class="quiz-card">
+            <div class="quiz-title">25. Graphic카드 성능의 핵심 GPU와 VRAM (2과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>GPU (Graphics Processing Unit):</b> 모니터에 뿌려줄 화면 영상의 복잡한 3D 연산을 전담하는 그래픽카드의 핵심 두뇌 칩셋입니다.</p>
+                    <p>• <b>VRAM (비디오 RAM):</b> 그래픽카드가 연산한 고해상도 이미지 데이터를 임시 보관하는 그래픽 전용 초고속 메모리입니다. 게임 그래픽 옵션을 높일 때 이 VRAM 용량이 많이 소모됩니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 26 -->
+        <div class="quiz-card">
+            <div class="quiz-title">26. 중앙 처리 장치 메인보드의 '칩셋(Chipset)' 역할 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>칩셋:</b> 메인보드의 정중앙에 위치하며 CPU, 메모리, 확장 슬롯(VGA), 저장장치 간의 데이터 흐름(버스 통신)을 총괄 제어하는 가장 중요한 컴퓨터의 교통경찰 역할을 합니다. 메인보드가 지원하는 CPU 종류나 최대 RAM 용량은 이 칩셋 스펙에 의해 결정됩니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 27 -->
+        <div class="quiz-card">
+            <div class="quiz-title">27. 해킹 기법 구분: 피싱 vs 스미싱 vs 파밍 (3과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>피싱 (Phishing):</b> 이메일이나 가짜 링크로 사용자를 속여 비밀번호를 탈취</p>
+                    <p>• <b>스미싱 (Smishing):</b> 문자 메시지(SMS)에 악성 앱 설치 링크를 보내 소액결제를 유도</p>
+                    <p>• <b>파밍 (Pharming):</b> 사용자 컴퓨터를 악성코드로 감염시켜, 사용자가 정상적인 포털 주소(예: naver.com)를 쳐도 해커가 만든 가짜 위장 사이트로 강제 접속되게 만드는 고도화된 기법</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 28 -->
+        <div class="quiz-card">
+            <div class="quiz-title">28. 사설 IP를 공인 IP로 바꾸는 'NAT' 기술 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>NAT (Network Address Translation):</b> 가정이나 사무실 내부에서 쓰는 수많은 사설 IP 주소들을 인터넷망에서 통하는 단 하나의 '공인 IP' 주소로 변환해 주는 기술입니다. 이 기술 덕분에 인터넷 회선 하나(공인 IP 1개)만 신청해도 공유기를 통해 수십 대의 PC와 스마트폰이 동시에 인터넷을 쓸 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 29 -->
+        <div class="quiz-card">
+            <div class="quiz-title">29. 외부에서 집 PC 서버에 접속하는 '포트 포워딩' (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>포트 포워딩 (Port Forwarding):</b> 외부 인터넷망에서 집의 공유기(공인 IP)로 특정 포트 번호 신호가 들어왔을 때, 공유기가 이를 내부 사설망의 특정 컴퓨터(예: 192.168.0.5의 80번 포트)로 길을 찾아 바로 연결해 주는 이정표 설정 기술입니다. 집 PC로 개인 홈페이지나 게임 서버를 돌릴 때 반드시 세팅해야 하는 유지보수 기능입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 30 -->
+        <div class="quiz-card">
+            <div class="quiz-title">30. 네트워크 경로 추적 및 진단 명령어 (4과목)</div>
+            <div class="quiz-answer-block" onclick="toggleAnswer(this)">
+                <span class="hint">👁️ 내용 보기</span>
+                <div class="answer">
+                    <p>• <b>ping [IP주소]</b> : 상대방 컴퓨터나 서버가 현재 네트워크에 연결되어 반응하는지 확인 (ICMP 프로토콜 사용)</p>
+                    <p>• <b>ipconfig</b> : 내 컴퓨터의 현재 IP 주소, 서브넷 마스크, 게이트웨이 주소를 확인</p>
+                    <p>• <b>tracert [도메인]</b> : 내 컴퓨터에서 목적지 서버까지 가는 동안 거치는 모든 라우터(경로)의 구간별 속도와 끊기는 지점을 추적하는 도구</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© PC정비사 자격증 필기 30대 핵심 뼈대집</p>
+    </footer>
+
+    <script>
+        function toggleAnswer(element) {
+            element.classList.toggle('revealed');
+        }
+
+        function switchTheme(checkbox) {
+            if (checkbox.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+    </script>
+</body>
+</html>
