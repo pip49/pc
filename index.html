@@ -22,6 +22,12 @@
             --sub3-bg: #e8f8f5;
             --sub4-color: #9b59b6;
             --sub4-bg: #f5eef8;
+
+            /* 핵심요약 및 기출문제 컬러 선언 */
+            --summary-color: #f1c40f;
+            --summary-bg: #fef9e7;
+            --exam-color: #e74c3c;
+            --exam-bg: #fadbd8;
         }
 
         [data-theme="dark"] {
@@ -35,6 +41,9 @@
             --sub2-bg: #342011;
             --sub3-bg: #112d1c;
             --sub4-bg: #24142c;
+
+            --summary-bg: #342e11;
+            --exam-bg: #3c1e1e;
         }
 
         * {
@@ -170,7 +179,7 @@
             border-radius: 50%;
         }
 
-        /* 각 과목별 스타일 매칭 */
+        /* 각 과목 및 메뉴별 스타일 매칭 */
         .sub1 { border-left: 6px solid var(--sub1-color); }
         .sub1 .menu-icon { background-color: var(--sub1-bg); color: var(--sub1-color); }
 
@@ -182,6 +191,12 @@
 
         .sub4 { border-left: 6px solid var(--sub4-color); }
         .sub4 .menu-icon { background-color: var(--sub4-bg); color: var(--sub4-color); }
+
+        .summary-btn { border-left: 6px solid var(--summary-color); }
+        .summary-btn .menu-icon { background-color: var(--summary-bg); color: var(--summary-color); }
+
+        .exam-btn { border-left: 6px solid var(--exam-color); }
+        .exam-btn .menu-icon { background-color: var(--exam-bg); color: var(--exam-color); }
 
         .menu-text {
             display: flex;
@@ -204,18 +219,6 @@
     </style>
 </head>
 <body>
-   
-    <a href="summary30.html">30대 핵심 요약집 보기</a> 
-
-    <!-- 메인화면 menu-container 내부에 추가하면 좋은 코드 예시 -->
-<a href="pastexam.html" class="menu-link" style="border-left: 6px solid #e74c3c;">
-    <div class="menu-icon" style="background-color: #fadbd8; color: #e74c3c;">📚</div>
-    <div class="menu-text">
-        <span>기출문제</span>
-        <span class="menu-subtitle"> PDF 보기</span>
-    </div>
-</a>
-
 
     <div class="control-bar">
         <div class="theme-switch-wrapper">
@@ -233,6 +236,7 @@
     </header>
 
     <div class="menu-container">
+        <!-- 1과목 ~ 4과목 메뉴 -->
         <a href="operate.html" class="menu-link sub1">
             <div class="menu-icon">💻</div>
             <div class="menu-text">
@@ -262,6 +266,24 @@
             <div class="menu-text">
                 <span>제4과목 : PC 네트워크</span>
                 <span class="menu-subtitle">OSI 7계층, TCP/IP, 무선랜 규격 핵심 100선</span>
+            </div>
+        </a>
+
+        <!-- 요약집 메뉴 (깔끔하게 카드형태로 통합) -->
+        <a href="summary30.html" class="menu-link summary-btn">
+            <div class="menu-icon">💡</div>
+            <div class="menu-text">
+                <span>30대 핵심 요약집</span>
+                <span class="menu-subtitle">시험 직전 꼭 봐야 할 핵심 요약집 보기</span>
+            </div>
+        </a>
+
+        <!-- 기출문제 메뉴 (깔끔하게 카드형태로 통합) -->
+        <a href="pastexam.html" class="menu-link exam-btn">
+            <div class="menu-icon">📚</div>
+            <div class="menu-text">
+                <span>과년도 기출문제</span>
+                <span class="menu-subtitle">2023년 ~ 2026년 기출 PDF 원본 보기</span>
             </div>
         </a>
     </div>
